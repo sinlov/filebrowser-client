@@ -1,0 +1,137 @@
+# https://docs.drone.io/pipeline/docker/examples/languages/golang/
+kind: pipeline
+type: docker
+name: golang-docker
+
+# platform: # https://docs.drone.io/yaml/docker/#the-platform-object
+#   os: windows
+#   arch: amd64
+
+# node: # https://docs.drone.io/yaml/docker/#the-node-attribute
+#   # DRONE_RUNNER_LABELS https://docs.drone.io/runner/docker/configuration/reference/drone-runner-labels/
+#   role: xxxx # Specify the runner DRONE_RUNNER_LABELS labeled `role:xxxx` to execute the pipeline
+
+# https://docs.drone.io/pipeline/environment/syntax/#per-pipeline
+environment:
+#  GOPROXY: 'https://goproxy.cn,direct'
+  GOPRIVATE: '*.gitlab.com,*.gitee.com'
+  GO111MODULE: on
+  CGO_ENABLED: 0
+  GOOS: linux
+  GOARCH: amd64
+
+steps:
+  - name: go-init
+    image: golang:1.17.13-buster
+    pull: if-not-exists
+    volumes:
+      - name: go_cache
+        path: /go
+    environment:
+      GOPATH: /go
+    commands:
+      - pwd
+      - echo "DRONE_REPO_NAME        ${DRONE_REPO_NAME}"
+      - echo "DRONE_REPO_OWNER       ${DRONE_REPO_OWNER}"
+      - echo "DRONE_REPO             ${DRONE_REPO}"
+      - echo "DRONE_BRANCH           ${DRONE_BRANCH/\//-}"
+      - echo "DRONE_COMMIT_SHA short ${DRONE_COMMIT_SHA:0:8}"
+      - echo "DRONE_TAG              ${DRONE_TAG##v}"
+      - go version
+      - go env
+      - go mod verify
+      - go mod tidy
+      - go mod download
+      - go mod vendor
+    when:
+      event:
+        - push
+  - name: go-test
+    image: golang:1.17.13-buster
+    pull: if-not-exists
+    volumes:
+      - name: go_cache
+        path: /go
+    environment:
+      GOPATH: /go
+    commands:
+      - make test
+      # - go test -test.v .
+    when:
+      event:
+        - push
+  - name: go-dist-test
+    image: golang:1.17.13-buster
+    pull: if-not-exists
+    volumes:
+      - name: go_cache
+        path: /go
+      - name: go_dist_test
+        path: /go_dist_test
+    environment:
+      GOPATH: /go
+    commands:
+      - make cleanAllDist distTestTar
+      - cp ./dist/**/**.gz /go_dist_test/
+    when:
+      event:
+        - push
+  - name: go-dist-release
+    image: golang:1.17.13-buster
+    pull: if-not-exists
+    volumes:
+      - name: go_cache
+        path: /go
+      - name: go_dist_release
+        path: /go_dist_release
+    environment:
+      GOPATH: /go
+    commands:
+      - make cleanAllDist distReleaseTar
+      - cp ./dist/**/**.gz /go_dist_release/
+    when:
+      event:
+        - tag
+  - name: notification-feishu-group-robot
+    image: sinlov/drone-feishu-group-robot:1.1.0-alpine
+    pull: if-not-exists
+    settings:
+      debug: false
+#      ntp_target: "pool.ntp.org" # if not set will not sync
+      timeout_second: 10 # default 10
+      feishu_webhook:
+        # https://docs.drone.io/pipeline/environment/syntax/#from-secrets
+        from_secret: feishu_group_bot_token
+      feishu_secret:
+        from_secret: feishu_group_secret_bot
+      feishu_msg_title: "Drone CI Notification" # default [Drone CI Notification]
+      # let notification card change more info see https://open.feishu.cn/document/ukTMukTMukTM/uAjNwUjLwYDM14CM2ATN
+      feishu_enable_forward: true
+    when:
+      event: # https://docs.drone.io/pipeline/exec/syntax/conditions/#by-event
+        - promote
+        - rollback
+        - push
+        - pull_request
+        - tag
+      status: # only support failure/success,  both open will send anything
+        - failure
+        - success
+
+trigger:
+  branch:
+    - main
+  event: # if use trigger.event tag , trigger.branch are invalid
+    - pull_request # will use trigger.branch
+    - push
+
+volumes: # need admin open Trusted
+  - name: go_cache
+    host:
+      path: /tmp/cache/go
+  - name: go_dist_test
+    host:
+      path: /tmp/cache/dist/test/go
+  - name: go_dist_release
+    host:
+      path: /tmp/cache/dist/release/go
