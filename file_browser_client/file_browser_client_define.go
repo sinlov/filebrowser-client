@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"github.com/monaco-io/request"
 	"github.com/monaco-io/request/response"
+	"github.com/sinlov/filebrowser-client/tools/folder"
 	"github.com/sinlov/filebrowser-client/web_api"
 	"log"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -138,12 +140,14 @@ func (f *FileBrowserClient) sendPublicJson(c request.Client, data interface{}, a
 	return resp, nil
 }
 
-func (f *FileBrowserClient) ResourcesGet(pathQuery string) (web_api.Resources, error) {
+// ResourcesGet
+// get path resource
+func (f *FileBrowserClient) ResourcesGet(pathResource string) (web_api.Resources, error) {
 	var resource web_api.Resources
 	if !f.IsLogin() {
 		return resource, fmt.Errorf("plase Login then get resource")
 	}
-	urlPath := fmt.Sprintf("%s/%s", web_api.ApiResources(), pathQuery)
+	urlPath := fmt.Sprintf("%s/%s", web_api.ApiResources(), pathResource)
 	c := request.Client{
 		Timeout: time.Duration(f.timeoutSecond) * time.Second,
 		URL:     urlPath,
@@ -153,6 +157,46 @@ func (f *FileBrowserClient) ResourcesGet(pathQuery string) (web_api.Resources, e
 		},
 	}
 	_, err := f.sendPublicJson(c, &resource, "ResourcesGet")
+	if err != nil {
+		return resource, err
+	}
+
+	return resource, nil
+}
+
+func (f *FileBrowserClient) ResourcesPostOne(resourcePost ResourcePost, override bool) (web_api.Resources, error) {
+	var resource web_api.Resources
+	if !f.IsLogin() {
+		return resource, fmt.Errorf("plase Login then get resource")
+	}
+	if resourcePost.LocalPath == "" {
+		return resource, fmt.Errorf("plase check LocalPath, now is empty for RemotePath: %s", resourcePost.RemotePath)
+	}
+
+	exists, err := folder.PathExists(resourcePost.LocalPath)
+	if err != nil || !exists {
+		return resource, fmt.Errorf("plase check LocalPath, now is not exist at: %s , err: %v", resourcePost.LocalPath, err)
+	}
+	if folder.PathIsDir(resourcePost.LocalPath) {
+		return resource, fmt.Errorf("plase check LocalPath, now is path is folder at: %s", resourcePost.LocalPath)
+	}
+
+	urlPath := fmt.Sprintf("%s/%s", web_api.ApiResources(), resourcePost.RemotePath)
+	c := request.Client{
+		Timeout: time.Duration(f.timeoutSecond) * time.Second,
+		URL:     urlPath,
+		Method:  request.POST,
+		Header: map[string]string{
+			web_api.AuthHeadKey: f.authHeadVal,
+		},
+		Query: map[string]string{
+			"override": strconv.FormatBool(override),
+		},
+		MultipartForm: request.MultipartForm{
+			Files: []string{resourcePost.LocalPath},
+		},
+	}
+	_, err = f.sendPublicJson(c, &resource, "ResourcesPost")
 	if err != nil {
 		return resource, err
 	}

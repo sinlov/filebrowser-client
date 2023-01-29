@@ -134,3 +134,13 @@ func TestResourceGet_Not_Found(t *testing.T) {
 	// verify ResourceGet_Not_Found
 	assert.Empty(t, resources)
 }
+
+func TestResourcesPostOne(t *testing.T) {
+	// mock ResourcesPostOne
+
+	t.Logf("~> mock ResourcesPostOne")
+	// do ResourcesPostOne
+	t.Logf("~> do ResourcesPostOne")
+	// verify ResourcesPostOne
+	assert.Equal(t, "", "")
+}
