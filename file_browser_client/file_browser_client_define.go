@@ -90,10 +90,14 @@ func (f *FileBrowserClient) Login() (bool, error) {
 	if f.isDebug {
 		log.Printf("FileBrowserClient try Login user: [ %s ] api: %s", f.username, web_api.ApiLogin())
 	}
+
+	header := BaseHeader()
+
 	c := request.Client{
 		Timeout: time.Duration(f.timeoutSecond) * time.Second,
 		URL:     web_api.ApiLogin(),
 		Method:  request.POST,
+		Header:  header,
 		JSON: web_api.LoginRequest{
 			Username: f.username,
 			Password: f.password,
@@ -148,13 +152,13 @@ func (f *FileBrowserClient) ResourcesGet(pathResource string) (web_api.Resources
 		return resource, fmt.Errorf("plase Login then get resource")
 	}
 	urlPath := fmt.Sprintf("%s/%s", web_api.ApiResources(), pathResource)
+	header := BaseHeader()
+	header[web_api.AuthHeadKey] = f.authHeadVal
 	c := request.Client{
 		Timeout: time.Duration(f.timeoutSecond) * time.Second,
 		URL:     urlPath,
 		Method:  request.GET,
-		Header: map[string]string{
-			web_api.AuthHeadKey: f.authHeadVal,
-		},
+		Header:  header,
 	}
 	_, err := f.sendPublicJson(c, &resource, "ResourcesGet")
 	if err != nil {
@@ -164,31 +168,30 @@ func (f *FileBrowserClient) ResourcesGet(pathResource string) (web_api.Resources
 	return resource, nil
 }
 
-func (f *FileBrowserClient) ResourcesPostOne(resourcePost ResourcePost, override bool) (web_api.Resources, error) {
-	var resource web_api.Resources
+func (f *FileBrowserClient) ResourcesPostOne(resourcePost ResourcePost, override bool) (bool, error) {
 	if !f.IsLogin() {
-		return resource, fmt.Errorf("plase Login then get resource")
+		return false, fmt.Errorf("plase Login then get resource")
 	}
 	if resourcePost.LocalPath == "" {
-		return resource, fmt.Errorf("plase check LocalPath, now is empty for RemotePath: %s", resourcePost.RemotePath)
+		return false, fmt.Errorf("plase check LocalPath, now is empty for RemotePath: %s", resourcePost.RemotePath)
 	}
 
 	exists, err := folder.PathExists(resourcePost.LocalPath)
 	if err != nil || !exists {
-		return resource, fmt.Errorf("plase check LocalPath, now is not exist at: %s , err: %v", resourcePost.LocalPath, err)
+		return false, fmt.Errorf("plase check LocalPath, now is not exist at: %s , err: %v", resourcePost.LocalPath, err)
 	}
 	if folder.PathIsDir(resourcePost.LocalPath) {
-		return resource, fmt.Errorf("plase check LocalPath, now is path is folder at: %s", resourcePost.LocalPath)
+		return false, fmt.Errorf("plase check LocalPath, now is path is folder at: %s", resourcePost.LocalPath)
 	}
 
 	urlPath := fmt.Sprintf("%s/%s", web_api.ApiResources(), resourcePost.RemotePath)
+	header := BaseHeader()
+	header[web_api.AuthHeadKey] = f.authHeadVal
 	c := request.Client{
 		Timeout: time.Duration(f.timeoutSecond) * time.Second,
 		URL:     urlPath,
 		Method:  request.POST,
-		Header: map[string]string{
-			web_api.AuthHeadKey: f.authHeadVal,
-		},
+		Header:  header,
 		Query: map[string]string{
 			"override": strconv.FormatBool(override),
 		},
@@ -196,10 +199,10 @@ func (f *FileBrowserClient) ResourcesPostOne(resourcePost ResourcePost, override
 			Files: []string{resourcePost.LocalPath},
 		},
 	}
-	_, err = f.sendPublicJson(c, &resource, "ResourcesPost")
+	_, err = f.sendPublic(c, "ResourcesPost")
 	if err != nil {
-		return resource, err
+		return false, fmt.Errorf("post file error\nremote: %s\nlocal: %s\nerr: %v", resourcePost.RemotePath, resourcePost.LocalPath, err)
 	}
 
-	return resource, nil
+	return true, nil
 }

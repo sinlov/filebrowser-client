@@ -3,7 +3,9 @@ package file_browser_client_test
 import (
 	"fmt"
 	"github.com/sinlov/filebrowser-client/file_browser_client"
+	"github.com/sinlov/filebrowser-client/tools/folder"
 	"github.com/stretchr/testify/assert"
+	"strings"
 	"testing"
 )
 
@@ -136,11 +138,51 @@ func TestResourceGet_Not_Found(t *testing.T) {
 }
 
 func TestResourcesPostOne(t *testing.T) {
+	if envCheck(t) {
+		t.Log("must check env then test")
+		return
+	}
 	// mock ResourcesPostOne
-
 	t.Logf("~> mock ResourcesPostOne")
-	// do ResourcesPostOne
+	testDataFolderPath, err := initPostFile()
+	if err != nil {
+		t.Error(err)
+	}
+
+	walkAllJsonFileBySuffix, err := folder.WalkAllFileBySuffix(testDataFolderPath, "json")
+	if err != nil {
+		t.Error(err)
+	}
+	if len(walkAllJsonFileBySuffix) == 0 {
+		t.Fatalf("walkAllJsonFileBySuffix len is 0")
+	}
+
 	t.Logf("~> do ResourcesPostOne")
+	// do ResourcesPostOne
+	client, err := tryLoginClient(t, envDebug)
+	if err != nil {
+		t.Errorf("login fail!")
+		return
+	}
+
+	localJsonFilePath := walkAllJsonFileBySuffix[len(walkAllJsonFileBySuffix)-1]
+	remotePath := strings.Replace(localJsonFilePath, testDataFolderPath, "", -1)
+	remotePath = strings.TrimPrefix(remotePath, "/")
+	var resourcePost = file_browser_client.ResourcePost{
+		LocalPath:  localJsonFilePath,
+		RemotePath: remotePath,
+	}
+	postOne, err := client.ResourcesPostOne(resourcePost, true)
+	if err != nil {
+		t.Errorf("try client.ResourcesPostOne err: %v", err)
+	}
 	// verify ResourcesPostOne
-	assert.Equal(t, "", "")
+	assert.True(t, postOne)
+
+	postAgain, err := client.ResourcesPostOne(resourcePost, false)
+	if err == nil {
+		t.Errorf("try client.ResourcesPostOne not cover override")
+	}
+
+	assert.False(t, postAgain)
 }
