@@ -8,11 +8,20 @@ const (
 )
 
 var (
-	apiBaseUrl = ""
+	filebrowserBaseUrl = ""
+	apiBaseUrl         = ""
 )
 
 func SetApiBase(baseUrl string) {
+	filebrowserBaseUrl = baseUrl
 	apiBaseUrl = fmt.Sprintf("%s/%s", baseUrl, baseApi)
+}
+
+func BaseUrl() string {
+	if filebrowserBaseUrl == "" {
+		panic("please use SetApiBase() first")
+	}
+	return filebrowserBaseUrl
 }
 
 func ApiBase() string {

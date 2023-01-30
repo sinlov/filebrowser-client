@@ -170,7 +170,7 @@ func (f *FileBrowserClient) ResourcesGet(pathResource string) (web_api.Resources
 
 func (f *FileBrowserClient) ResourcesPostOne(resourcePost ResourcePost, override bool) (bool, error) {
 	if !f.IsLogin() {
-		return false, fmt.Errorf("plase Login then get resource")
+		return false, fmt.Errorf("plase Login then ResourcesPostOne")
 	}
 	if resourcePost.LocalPath == "" {
 		return false, fmt.Errorf("plase check LocalPath, now is empty for RemotePath: %s", resourcePost.RemotePath)
@@ -188,7 +188,7 @@ func (f *FileBrowserClient) ResourcesPostOne(resourcePost ResourcePost, override
 	header := BaseHeader()
 	header[web_api.AuthHeadKey] = f.authHeadVal
 	c := request.Client{
-		Timeout: time.Duration(f.timeoutSecond) * time.Second,
+		Timeout: time.Duration(f.timeoutFileSecond) * time.Second,
 		URL:     urlPath,
 		Method:  request.POST,
 		Header:  header,
@@ -205,4 +205,65 @@ func (f *FileBrowserClient) ResourcesPostOne(resourcePost ResourcePost, override
 	}
 
 	return true, nil
+}
+
+type ShareResource struct {
+	RemotePath  string
+	ShareConfig web_api.ShareConfig
+}
+
+func (f *FileBrowserClient) SharePost(shareResource ShareResource) (web_api.ShareLink, error) {
+	var shareLink web_api.ShareLink
+	if !f.IsLogin() {
+		return shareLink, fmt.Errorf("plase Login then SharePost")
+	}
+
+	if shareResource.RemotePath == "" {
+		return shareLink, fmt.Errorf("please check shareResource.RemotePath , now is empty")
+	}
+
+	if web_api.CheckFalseShareConfig(shareResource.ShareConfig) {
+		return shareLink, fmt.Errorf("please check shareResource.ShareConfig error of setting most is Unit not in %v , or Expires is less than 0", web_api.ShareUnitDefine())
+	}
+
+	urlPath := fmt.Sprintf("%s/%s", web_api.ApiShare(), shareResource.RemotePath)
+	header := BaseHeader()
+	header[web_api.AuthHeadKey] = f.authHeadVal
+	c := request.Client{
+		Timeout: time.Duration(f.timeoutSecond) * time.Second,
+		URL:     urlPath,
+		Method:  request.POST,
+		Header:  header,
+		JSON:    shareResource.ShareConfig,
+	}
+
+	_, err := f.sendPublicJson(c, &shareLink, "SharePost")
+	if err != nil {
+		return shareLink, err
+	}
+
+	return shareLink, nil
+}
+
+func (f *FileBrowserClient) SharesGet() ([]web_api.ShareLink, error) {
+	var shareLinks []web_api.ShareLink
+	if !f.IsLogin() {
+		return shareLinks, fmt.Errorf("plase Login then SharesGet")
+	}
+
+	header := BaseHeader()
+	header[web_api.AuthHeadKey] = f.authHeadVal
+
+	c := request.Client{
+		Timeout: time.Duration(f.timeoutSecond) * time.Second,
+		URL:     web_api.ApiShares(),
+		Method:  request.GET,
+		Header:  header,
+	}
+	_, err := f.sendPublicJson(c, &shareLinks, "SharesGet")
+	if err != nil {
+		return shareLinks, err
+	}
+
+	return shareLinks, nil
 }

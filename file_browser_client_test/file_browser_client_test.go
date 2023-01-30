@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/sinlov/filebrowser-client/file_browser_client"
 	"github.com/sinlov/filebrowser-client/tools/folder"
+	"github.com/sinlov/filebrowser-client/web_api"
 	"github.com/stretchr/testify/assert"
 	"strings"
 	"testing"
@@ -185,4 +186,75 @@ func TestResourcesPostOne(t *testing.T) {
 	}
 
 	assert.False(t, postAgain)
+}
+
+func TestSharesPost(t *testing.T) {
+	// mock SharePost
+	t.Logf("~> mock SharePost")
+	if envCheck(t) {
+		t.Log("must check env then test")
+		return
+	}
+	// mock ResourcesPostOne
+	t.Logf("~> mock ResourcesPostOne")
+	testDataFolderPath, err := initPostFile()
+	if err != nil {
+		t.Error(err)
+	}
+
+	walkAllJsonFileBySuffix, err := folder.WalkAllFileBySuffix(testDataFolderPath, "json")
+	if err != nil {
+		t.Error(err)
+	}
+	if len(walkAllJsonFileBySuffix) == 0 {
+		t.Fatalf("walkAllJsonFileBySuffix len is 0")
+	}
+
+	localJsonFilePath := walkAllJsonFileBySuffix[len(walkAllJsonFileBySuffix)-1]
+	remotePath := strings.Replace(localJsonFilePath, testDataFolderPath, "", -1)
+	remotePath = strings.TrimPrefix(remotePath, "/")
+
+	// do SharePost
+
+	client, err := tryLoginClient(t, envDebug)
+	if err != nil {
+		t.Errorf("login fail!")
+		return
+	}
+
+	var resourcePost = file_browser_client.ResourcePost{
+		LocalPath:  localJsonFilePath,
+		RemotePath: remotePath,
+	}
+	postOne, err := client.ResourcesPostOne(resourcePost, true)
+	if err != nil {
+		t.Errorf("try client.ResourcesPostOne err: %v", err)
+	}
+	assert.True(t, postOne)
+
+	t.Logf("~> do SharePost")
+	passWord := randomStr(10)
+	shareResource := file_browser_client.ShareResource{
+		RemotePath: remotePath,
+		ShareConfig: web_api.ShareConfig{
+			Password: passWord,
+			Expires:  "10",
+			Unit:     web_api.ShareUnitHours,
+		},
+	}
+	sharesResp, err := client.SharePost(shareResource)
+	if err != nil {
+		t.Error(err)
+	}
+	// verify SharePost
+	assert.NotNil(t, sharesResp)
+	assert.NotEqual(t, "", sharesResp.Hash)
+	t.Logf("------- path: %s\ndonwload page: %s/%s \npasswd: %s", remotePath, web_api.ShareUrlBase(), sharesResp.Hash, passWord)
+	t.Logf("download url: %s/%s", web_api.ApiPublicDL(), sharesResp.Hash)
+
+	shareLinks, err := client.SharesGet()
+	if err != nil {
+		t.Error(err)
+	}
+	assert.NotNil(t, shareLinks)
 }
