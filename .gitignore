@@ -12,7 +12,7 @@ vendor/
 *.test
 # test coverage out
 coverage.out
-coverage.txt
+#coverage.txt
 # testData folder of golang
 testdata/
 # Expected results when tested

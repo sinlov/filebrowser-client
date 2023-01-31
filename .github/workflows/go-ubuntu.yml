@@ -32,15 +32,16 @@ jobs:
       run: |
         make actionInstall
 
-    - name: test coverage
-      run: make actionCoverage
+#    mock local to test so update coverage.txt to remote
+#    - name: test coverage
+#      run: make actionCoverage
+#
+#    - name: test benchmark
+#      run: make actionTestBenchmark
 
-    - name: test benchmark
-      run: make actionTestBenchmark
-
-#    - name: Codecov
-#      uses: codecov/codecov-action@v3.1.1
-#      with:
-#        token: ${{secrets.CODECOV_TOKEN}}
-#        files: coverage.txt
-##        verbose: true
+    - name: Codecov
+      uses: codecov/codecov-action@v3.1.1
+      with:
+        token: ${{secrets.CODECOV_TOKEN}}
+        files: coverage.txt
+#        verbose: true
