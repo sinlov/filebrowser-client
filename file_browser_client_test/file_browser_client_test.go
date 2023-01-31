@@ -59,12 +59,11 @@ func TestLogin(t *testing.T) {
 
 	assert.False(t, client.IsLogin())
 
-	login, err := client.Login()
+	err = client.Login()
 	if err != nil {
 		t.Errorf("file_browser_client.Login() err: %v", err)
 	}
 	// verify Login
-	assert.Equal(t, true, login)
 	assert.True(t, client.IsLogin())
 }
 
@@ -82,12 +81,12 @@ func tryLoginClient(t *testing.T, isDebug bool) (file_browser_client.FileBrowser
 	}
 
 	client.Debug(isDebug)
-	login, err := client.Login()
+	err = client.Login()
 	if err != nil {
 		return client, fmt.Errorf("file_browser_client.FileBrowserClient.Login() err: %v", err)
 	}
 	// verify Login
-	if !login {
+	if !client.IsLogin() {
 		return client, fmt.Errorf("file_browser_client.FileBrowserClient.Login() err: %v", "not login")
 	}
 
@@ -178,19 +177,17 @@ func TestResourcesPostOne(t *testing.T) {
 		LocalFilePath:  localJsonFilePath,
 		RemoteFilePath: remotePath,
 	}
-	postOne, err := client.ResourcesPostFile(resourcePost, true)
+	err = client.ResourcesPostFile(resourcePost, true)
+	// verify ResourcesPostFile
 	if err != nil {
 		t.Errorf("try client.ResourcesPostFile err: %v", err)
 	}
-	// verify ResourcesPostFile
-	assert.True(t, postOne)
 
-	postAgain, err := client.ResourcesPostFile(resourcePost, false)
+	err = client.ResourcesPostFile(resourcePost, false)
 	if err == nil {
 		t.Errorf("try client.ResourcesPostFile not cover override")
 	}
 
-	assert.False(t, postAgain)
 }
 
 func TestSharesPost(t *testing.T) {
@@ -235,11 +232,10 @@ func TestSharesPost(t *testing.T) {
 		LocalFilePath:  localJsonFilePath,
 		RemoteFilePath: remotePath,
 	}
-	postOne, err := client.ResourcesPostFile(resourcePost, true)
+	err = client.ResourcesPostFile(resourcePost, true)
 	if err != nil {
 		t.Errorf("try client.ResourcesPostFile err: %v", err)
 	}
-	assert.True(t, postOne)
 
 	remotePathGetCheckSum256, err := client.ResourcesGetCheckSum(remotePath, web_api.ChecksumSha256)
 	if err != nil {
@@ -349,5 +345,6 @@ func TestSharesPost(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	assert.True(t, postDirectoryFilesRes)
+	assert.True(t, postDirectoryFilesRes.FullSuccess)
+	assert.Greater(t, len(postDirectoryFilesRes.SuccessFiles), len(postDirectoryFilesRes.FailFiles))
 }

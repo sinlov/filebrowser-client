@@ -34,6 +34,8 @@ type (
 	}
 )
 
+// NewClient
+// new client for filebrowser
 func NewClient(
 	username, password, baseUrl string,
 	timeoutSecond, timeoutFileSecond uint,
@@ -46,13 +48,13 @@ func NewClient(
 	if timeoutFileSecond < 30 {
 		timeoutFileSecond = 30
 	}
-	return client.Client(
+	return client.client(
 		username, password, baseUrl,
 		timeoutSecond, timeoutFileSecond,
 	)
 }
 
-func (f *FileBrowserClient) Client(
+func (f *FileBrowserClient) client(
 	username, password, baseUrl string,
 	timeoutSecond, timeoutFileSecond uint,
 ) (FileBrowserClient, error) {
@@ -161,9 +163,9 @@ func (f *FileBrowserClient) IsLogin() bool {
 
 // Login
 // do login by FileBrowserClient
-func (f *FileBrowserClient) Login() (bool, error) {
+func (f *FileBrowserClient) Login() error {
 	if f.baseUrl == "" || f.username == "" {
-		return false, fmt.Errorf("clinet not init by baseUrl or username, please check")
+		return fmt.Errorf("clinet not init by baseUrl or username, please check")
 	}
 	if f.isDebug {
 		log.Printf("debug: FileBrowserClient try Login user: [ %s ] api: %s", f.username, web_api.ApiLogin())
@@ -183,13 +185,13 @@ func (f *FileBrowserClient) Login() (bool, error) {
 	}
 	send, err := f.sendRespRaw(c, "Login")
 	if err != nil {
-		return false, err
+		return err
 	}
 	if f.isDebug {
 		log.Printf("debug: try Login user succes by code [ %v ]", send.Code())
 	}
 	f.authHeadVal = send.String()
-	return true, nil
+	return nil
 }
 
 // ResourcesGet
@@ -274,20 +276,20 @@ func (f *FileBrowserClient) ResourcesDeletePath(remotePath string) (bool, error)
 // ResourcesPostFile
 // param post file by ResourcePostFile, ResourcePostFile.LocalFilePath must exist;
 // override will want override remote path, but success must enable the permission at filebrowser to modify files
-func (f *FileBrowserClient) ResourcesPostFile(resourceFile ResourcePostFile, override bool) (bool, error) {
+func (f *FileBrowserClient) ResourcesPostFile(resourceFile ResourcePostFile, override bool) error {
 	if !f.IsLogin() {
-		return false, fmt.Errorf("plase Login then ResourcesPostFile")
+		return fmt.Errorf("plase Login then ResourcesPostFile")
 	}
 	if resourceFile.LocalFilePath == "" {
-		return false, fmt.Errorf("plase check LocalFilePath, now is empty for RemoteFilePath: %s", resourceFile.RemoteFilePath)
+		return fmt.Errorf("plase check LocalFilePath, now is empty for RemoteFilePath: %s", resourceFile.RemoteFilePath)
 	}
 
 	exists, err := folder.PathExists(resourceFile.LocalFilePath)
 	if err != nil || !exists {
-		return false, fmt.Errorf("plase check LocalFilePath, now is not exist at: %s , err: %v", resourceFile.LocalFilePath, err)
+		return fmt.Errorf("plase check LocalFilePath, now is not exist at: %s , err: %v", resourceFile.LocalFilePath, err)
 	}
 	if folder.PathIsDir(resourceFile.LocalFilePath) {
-		return false, fmt.Errorf("plase check LocalFilePath, now is path is folder at: %s", resourceFile.LocalFilePath)
+		return fmt.Errorf("plase check LocalFilePath, now is path is folder at: %s", resourceFile.LocalFilePath)
 	}
 
 	urlPath := fmt.Sprintf("%s/%s", web_api.ApiResources(), resourceFile.RemoteFilePath)
@@ -307,29 +309,36 @@ func (f *FileBrowserClient) ResourcesPostFile(resourceFile ResourcePostFile, ove
 	}
 	_, err = f.sendRespRaw(c, "ResourcesPost")
 	if err != nil {
-		return false, fmt.Errorf("post file error\nremote: %s\nlocal: %s\nerr: %v", resourceFile.RemoteFilePath, resourceFile.LocalFilePath, err)
+		return fmt.Errorf("post file error\nremote: %s\nlocal: %s\nerr: %v", resourceFile.RemoteFilePath, resourceFile.LocalFilePath, err)
 	}
 
-	return true, nil
+	return nil
+}
+
+type ResourcesPostDirectoryResult struct {
+	FullSuccess  bool               `json:"full_success"`
+	SuccessFiles []ResourcePostFile `json:"post_success_files,omitempty"`
+	FailFiles    []ResourcePostFile `json:"fail_files,omitempty"`
 }
 
 // ResourcesPostDirectoryFiles
 // post directory full files by ResourcePostDirectory settings
 // ResourcePostDirectory.LocalDirectoryPath must exist
 // override will want override remote path, but success must enable the permission at filebrowser to modify files
-func (f *FileBrowserClient) ResourcesPostDirectoryFiles(resourceDirectory ResourcePostDirectory, override bool) (bool, error) {
+func (f *FileBrowserClient) ResourcesPostDirectoryFiles(resourceDirectory ResourcePostDirectory, override bool) (ResourcesPostDirectoryResult, error) {
+	var result ResourcesPostDirectoryResult
 	if !f.IsLogin() {
-		return false, fmt.Errorf("plase Login then ResourcesPostDirectoryFiles")
+		return result, fmt.Errorf("plase Login then ResourcesPostDirectoryFiles")
 	}
 	if resourceDirectory.LocalDirectoryPath == "" {
-		return false, fmt.Errorf("plase check LocalDirectoryPath, now is empty for RemoteDirectoryPath: %s", resourceDirectory.RemoteDirectoryPath)
+		return result, fmt.Errorf("plase check LocalDirectoryPath, now is empty for RemoteDirectoryPath: %s", resourceDirectory.RemoteDirectoryPath)
 	}
 	exists, err := folder.PathExists(resourceDirectory.LocalDirectoryPath)
 	if err != nil || !exists {
-		return false, fmt.Errorf("plase check LocalDirectoryPath, now is not exist at: %s , err: %v", resourceDirectory.LocalDirectoryPath, err)
+		return result, fmt.Errorf("plase check LocalDirectoryPath, now is not exist at: %s , err: %v", resourceDirectory.LocalDirectoryPath, err)
 	}
 	if folder.PathIsFile(resourceDirectory.LocalDirectoryPath) {
-		return false, fmt.Errorf("plase check LocalDirectoryPath, now is path is file at: %s", resourceDirectory.LocalDirectoryPath)
+		return result, fmt.Errorf("plase check LocalDirectoryPath, now is path is file at: %s", resourceDirectory.LocalDirectoryPath)
 	}
 	var resourcePostFileList []ResourcePostFile
 	err = filepath.Walk(resourceDirectory.LocalDirectoryPath, func(filename string, fi os.FileInfo, err error) error {
@@ -345,7 +354,7 @@ func (f *FileBrowserClient) ResourcesPostDirectoryFiles(resourceDirectory Resour
 		return nil
 	})
 	if len(resourcePostFileList) == 0 {
-		return false, fmt.Errorf("plase check LocalDirectoryPath, has no files at: %s", resourceDirectory.LocalDirectoryPath)
+		return result, fmt.Errorf("plase check LocalDirectoryPath, has no files at: %s", resourceDirectory.LocalDirectoryPath)
 	}
 	if f.isDebug {
 		log.Print("debug: want ResourcesPostDirectoryFiles start\n")
@@ -354,15 +363,25 @@ func (f *FileBrowserClient) ResourcesPostDirectoryFiles(resourceDirectory Resour
 		}
 		log.Print("debug: want ResourcesPostDirectoryFiles end")
 	}
-
+	result.FullSuccess = true
+	var postSuccFileList []ResourcePostFile
+	var postFailFileList []ResourcePostFile
 	for _, resourcePostFile := range resourcePostFileList {
-		postFileResp, errPostFile := f.ResourcesPostFile(resourcePostFile, override)
-		if errPostFile != nil || !postFileResp {
-			return false, fmt.Errorf("post folder fail at\nLocalFilePath: %s\nRemoteFilePath: %s\nerr: %s", resourcePostFile.LocalFilePath, resourcePostFile.LocalFilePath, errPostFile)
+		errPostFile := f.ResourcesPostFile(resourcePostFile, override)
+		if errPostFile != nil {
+			if f.isDebug {
+				log.Printf("post folder fail at\nLocalFilePath: %s\nRemoteFilePath: %s\nerr: %s", resourcePostFile.LocalFilePath, resourcePostFile.LocalFilePath, errPostFile)
+			}
+			postFailFileList = append(postFailFileList, resourcePostFile)
+			result.FullSuccess = false
+		} else {
+			postSuccFileList = append(postSuccFileList, resourcePostFile)
 		}
 	}
+	result.FailFiles = postFailFileList
+	result.SuccessFiles = postSuccFileList
 
-	return true, nil
+	return result, nil
 }
 
 // ResourceDownload
