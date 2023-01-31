@@ -249,6 +249,8 @@ func writeFileAsJsonBeauty(path string, v interface{}, coverage bool) error {
 	return writeFileAsJson(path, v, os.FileMode(0766), coverage, true)
 }
 
+// randomStr
+// new random string by cnt
 func randomStr(cnt uint) string {
 	var letters = []byte("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")
 	result := make([]byte, cnt)
@@ -258,6 +260,13 @@ func randomStr(cnt uint) string {
 		result[i] = letters[rand.Intn(keyL)]
 	}
 	return string(result)
+}
+
+// randomInt
+// new random int by max
+func randomInt(max int) int {
+	rand.Seed(time.Now().Unix())
+	return rand.Intn(max)
 }
 
 // test case file tools end
