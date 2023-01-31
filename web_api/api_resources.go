@@ -5,6 +5,28 @@ import (
 	"os"
 )
 
+const (
+	ChecksumMd5    = "md5"
+	ChecksumSha1   = "sha1"
+	ChecksumSha256 = "sha256"
+	ChecksumSha512 = "sha512"
+)
+
+var defineChecksums []string
+
+func ChecksumsDefine() []string {
+	if defineChecksums == nil {
+		defineChecksums = []string{
+			"",
+			ChecksumMd5,
+			ChecksumSha1,
+			ChecksumSha256,
+			ChecksumSha512,
+		}
+	}
+	return defineChecksums
+}
+
 func ApiResources() string {
 	return fmt.Sprintf("%s/%s", ApiBase(), "resources")
 }
@@ -23,9 +45,11 @@ type FileInfo struct {
 	//
 	Mode os.FileMode `json:"mode"`
 	// Type [ blob text ] text will send content
-	Type      string            `json:"type"`
-	Subtitles []string          `json:"subtitles,omitempty"`
-	Content   string            `json:"content,omitempty"`
+	Type      string   `json:"type"`
+	Subtitles []string `json:"subtitles,omitempty"`
+	Content   string   `json:"content,omitempty"`
+	// Checksums
+	// key will be [ md5 sha1 sha256 sha512 ]
 	Checksums map[string]string `json:"checksums,omitempty"`
 	Token     string            `json:"token,omitempty"`
 }
@@ -57,9 +81,11 @@ type Resources struct {
 	//
 	Mode os.FileMode `json:"mode"`
 	// Type [ blob text ] text will send content
-	Type      string            `json:"type"`
-	Subtitles []string          `json:"subtitles,omitempty"`
-	Content   string            `json:"content,omitempty"`
+	Type      string   `json:"type"`
+	Subtitles []string `json:"subtitles,omitempty"`
+	Content   string   `json:"content,omitempty"`
+	// Checksums
+	// key will be [ md5 sha1 sha256 sha512 ]
 	Checksums map[string]string `json:"checksums,omitempty"`
 	Token     string            `json:"token,omitempty"`
 }

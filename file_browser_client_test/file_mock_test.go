@@ -3,23 +3,25 @@ package file_browser_client_test
 import (
 	"fmt"
 	"github.com/sinlov/filebrowser-client/tools/folder"
+	"path"
 )
 
-func initPostFile() (string, error) {
+func initTestDataPostFileDir() (string, error) {
 	testDataFolderPath, err := getOrCreateTestDataFolderFullPath()
 	if err != nil {
 		return "", err
 	}
+	testPostDataFolderPath := path.Join(testDataFolderPath, "post")
 
 	rootLevCnt := 3
 
-	err = addTextFileByTry(testDataFolderPath, "data", "json", rootLevCnt)
+	err = addTextFileByTry(testPostDataFolderPath, "data", "json", rootLevCnt)
 	if err != nil {
 		return "", err
 	}
 
 	innerLev1JsonCnt := 5
-	innerLev1Folder := folder.PathJoin(testDataFolderPath, "inner_1")
+	innerLev1Folder := folder.PathJoin(testPostDataFolderPath, "inner_1")
 	err = addTextFileByTry(innerLev1Folder, "data", "json", innerLev1JsonCnt)
 	if err != nil {
 		return "", err
@@ -66,7 +68,22 @@ func initPostFile() (string, error) {
 	//	return err
 	//}
 
-	return testDataFolderPath, nil
+	return testPostDataFolderPath, nil
+}
+
+func initTestDataDownloadDir() (string, error) {
+	testDataFolderPath, err := getOrCreateTestDataFolderFullPath()
+	if err != nil {
+		return "", err
+	}
+	testDownloadDataFolderPath := path.Join(testDataFolderPath, "download")
+	if !folder.PathExistsFast(testDownloadDataFolderPath) {
+		errMkdir := folder.Mkdir(testDownloadDataFolderPath)
+		if errMkdir != nil {
+			return "", errMkdir
+		}
+	}
+	return testDownloadDataFolderPath, err
 }
 
 func addTextFileByTry(targetDir, fileHead, suffix string, cnt int) error {

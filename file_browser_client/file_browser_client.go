@@ -5,10 +5,13 @@ import (
 	"github.com/monaco-io/request"
 	"github.com/monaco-io/request/response"
 	"github.com/sinlov/filebrowser-client/tools/folder"
+	tools "github.com/sinlov/filebrowser-client/tools/str_tools"
 	"github.com/sinlov/filebrowser-client/web_api"
 	"log"
 	"net/http"
 	"net/url"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -75,20 +78,95 @@ func (f *FileBrowserClient) Client(
 	return fbClient, nil
 }
 
+func (f *FileBrowserClient) sendRespRaw(c request.Client, apiName string) (*response.Sugar, error) {
+	if f.isDebug {
+		log.Printf("debug: FileBrowserClient sendRespRaw try user: [ %s ] url: %s ", f.username, c.URL)
+		c.PrintCURL()
+	}
+	send := c.Send()
+	if !send.OK() {
+		return send, fmt.Errorf("try %v send user [ %v ] fail: %v", apiName, f.username, send.Error())
+	}
+	if send.Code() != http.StatusOK {
+		return send, fmt.Errorf("try %v user [ %v ] fail: code [ %v ], msg: %v", apiName, f.username, send.Code(), send.String())
+	}
+	if f.isDebug {
+		log.Printf("debug: sendRespRaw try %v user succes by code [ %v ], content:\n%s", apiName, send.Code(), send.String())
+	}
+	return send, nil
+}
+
+func (f *FileBrowserClient) sendRespJson(c request.Client, data interface{}, apiName string) (*response.Sugar, error) {
+	if f.isDebug {
+		log.Printf("debug: FileBrowserClient sendRespJson try user: [ %s ] url: %s ", f.username, c.URL)
+		c.PrintCURL()
+	}
+	send := c.Send()
+	if !send.OK() {
+		return send, fmt.Errorf("try %v send user [ %v ] fail: %v", apiName, f.username, send.Error())
+	}
+	if send.Code() != http.StatusOK {
+		return send, fmt.Errorf("try %v user [ %v ] fail: code [ %v ], msg: %v", apiName, f.username, send.Code(), send.String())
+	}
+	if f.isDebug {
+		log.Printf("debug: FileBrowserClient sendRespJson try %v user succes by code [ %v ], content:\n%s", apiName, send.Code(), send.String())
+	}
+
+	resp := send.ScanJSON(data)
+	if !resp.OK() {
+		return resp, fmt.Errorf("try FileBrowserClient sendRespJson %v ScanJSON fail: %v", apiName, resp.Error())
+	}
+	return resp, nil
+}
+
+func (f *FileBrowserClient) sendSaveFile(c request.Client, apiName string, fileName string, override bool) (*response.Sugar, error) {
+	if f.isDebug {
+		log.Printf("debug: FileBrowserClient sendSaveFile try user: [ %s ] url: %s ", f.username, c.URL)
+		c.PrintCURL()
+	}
+	if !override && folder.PathExistsFast(fileName) {
+		return nil, fmt.Errorf("sendSaveFile not override, save path exists at: %s", fileName)
+	}
+
+	pathParent := folder.PathParent(fileName)
+	if !folder.PathExistsFast(pathParent) {
+		return nil, fmt.Errorf("sendSaveFile fail parent path not exists at: %s", pathParent)
+	}
+
+	send := c.Send()
+	if !send.OK() {
+		return send, fmt.Errorf("try %v send user [ %v ] fail: %v", apiName, f.username, send.Error())
+	}
+	if send.Code() != http.StatusOK {
+		return send, fmt.Errorf("try %v user [ %v ] fail: code [ %v ], msg: %v", apiName, f.username, send.Code(), send.String())
+	}
+	if f.isDebug {
+		log.Printf("debug: sendSaveFile try %v user succes by code [ %v ]", apiName, send.Code())
+	}
+	send.SaveToFile(fileName)
+	return send, nil
+}
+
+// Debug
+// open FileBrowserClient debug or close
 func (f *FileBrowserClient) Debug(isDebug bool) {
 	f.isDebug = isDebug
 }
 
+// IsLogin
+// check FileBrowserClient has login
 func (f *FileBrowserClient) IsLogin() bool {
 	return f.authHeadVal != ""
 }
 
+// Login
+// do login by FileBrowserClient
 func (f *FileBrowserClient) Login() (bool, error) {
 	if f.baseUrl == "" || f.username == "" {
 		return false, fmt.Errorf("clinet not init by baseUrl or username, please check")
 	}
 	if f.isDebug {
-		log.Printf("FileBrowserClient try Login user: [ %s ] api: %s", f.username, web_api.ApiLogin())
+		log.Printf("debug: FileBrowserClient try Login user: [ %s ] api: %s", f.username, web_api.ApiLogin())
 	}
 
 	header := BaseHeader()
@@ -103,64 +181,62 @@ func (f *FileBrowserClient) Login() (bool, error) {
 			Password: f.password,
 		},
 	}
-	send, err := f.sendPublic(c, "Login")
+	send, err := f.sendRespRaw(c, "Login")
 	if err != nil {
 		return false, err
 	}
 	if f.isDebug {
-		log.Printf("try Login user succes by code [ %v ]", send.Code())
+		log.Printf("debug: try Login user succes by code [ %v ]", send.Code())
 	}
 	f.authHeadVal = send.String()
 	return true, nil
 }
 
-func (f *FileBrowserClient) sendPublic(c request.Client, apiName string) (*response.Sugar, error) {
-	if f.isDebug {
-		log.Printf("FileBrowserClient try ResourcesGet user: [ %s ] curl", f.username)
-		c.PrintCURL()
-	}
-	send := c.Send()
-	if !send.OK() {
-		return nil, fmt.Errorf("try %v send user [ %v ] fail: %v", apiName, f.username, send.Error())
-	}
-	if send.Code() != http.StatusOK {
-		return nil, fmt.Errorf("try %v user [ %v ] fail: code [ %v ], msg: %v", apiName, f.username, send.Code(), send.String())
-	}
-	if f.isDebug {
-		log.Printf("try %v user succes by code [ %v ], content:\n%s", apiName, send.Code(), send.String())
-	}
-	return send, nil
-}
-
-func (f *FileBrowserClient) sendPublicJson(c request.Client, data interface{}, apiName string) (*response.Sugar, error) {
-	send, err := f.sendPublic(c, apiName)
-	if err != nil {
-		return send, err
-	}
-	resp := send.ScanJSON(data)
-	if !resp.OK() {
-		return resp, fmt.Errorf("try %v ScanJSON fail: %v", apiName, resp.Error())
-	}
-	return resp, nil
-}
-
 // ResourcesGet
-// get path resource
+// pathResource path resource at remote
 func (f *FileBrowserClient) ResourcesGet(pathResource string) (web_api.Resources, error) {
+	return f.ResourcesGetCheckSum(pathResource, "")
+}
+
+// ResourcesGetCheckSum
+// pathResource path resource at remote
+// checksum will be [ md5 sha1 sha256 sha512 ] or empty
+func (f *FileBrowserClient) ResourcesGetCheckSum(pathResource string, checksum string) (web_api.Resources, error) {
 	var resource web_api.Resources
 	if !f.IsLogin() {
-		return resource, fmt.Errorf("plase Login then get resource")
+		if checksum == "" {
+			return resource, fmt.Errorf("plase Login then get resource ResourcesGet")
+		}
+		return resource, fmt.Errorf("plase Login then get resource ResourcesGetCheckSum")
 	}
-	urlPath := fmt.Sprintf("%s/%s", web_api.ApiResources(), pathResource)
+
+	if !tools.StrInArr(checksum, web_api.ChecksumsDefine()) {
+		return resource, fmt.Errorf("plase check checksum, now [ %s ] only support %v", checksum, web_api.ChecksumsDefine())
+	}
+	var urlPath = fmt.Sprintf("%s/%s", web_api.ApiResources(), pathResource)
 	header := BaseHeader()
 	header[web_api.AuthHeadKey] = f.authHeadVal
-	c := request.Client{
-		Timeout: time.Duration(f.timeoutSecond) * time.Second,
-		URL:     urlPath,
-		Method:  request.GET,
-		Header:  header,
+	var c request.Client
+	if checksum == "" {
+		c = request.Client{
+			Timeout: time.Duration(f.timeoutSecond) * time.Second,
+			URL:     urlPath,
+			Method:  request.GET,
+			Header:  header,
+		}
+	} else {
+		c = request.Client{
+			Timeout: time.Duration(f.timeoutSecond) * time.Second,
+			URL:     urlPath,
+			Method:  request.GET,
+			Header:  header,
+			Query: map[string]string{
+				"checksum": checksum,
+			},
+		}
 	}
-	_, err := f.sendPublicJson(c, &resource, "ResourcesGet")
+
+	_, err := f.sendRespJson(c, &resource, "ResourcesGetCheckSum")
 	if err != nil {
 		return resource, err
 	}
@@ -168,23 +244,53 @@ func (f *FileBrowserClient) ResourcesGet(pathResource string) (web_api.Resources
 	return resource, nil
 }
 
-func (f *FileBrowserClient) ResourcesPostOne(resourcePost ResourcePost, override bool) (bool, error) {
+// ResourcesDeletePath
+// remotePath just use remote path
+func (f *FileBrowserClient) ResourcesDeletePath(remotePath string) (bool, error) {
 	if !f.IsLogin() {
-		return false, fmt.Errorf("plase Login then ResourcesPostOne")
+		return false, fmt.Errorf("plase Login then ResourcesDeletePath")
 	}
-	if resourcePost.LocalPath == "" {
-		return false, fmt.Errorf("plase check LocalPath, now is empty for RemotePath: %s", resourcePost.RemotePath)
+	if remotePath == "" {
+		return false, fmt.Errorf("plase check now is empty for remotePath")
+	}
+	urlPath := fmt.Sprintf("%s/%s", web_api.ApiResources(), remotePath)
+	header := BaseHeader()
+	header[web_api.AuthHeadKey] = f.authHeadVal
+	c := request.Client{
+		Timeout: time.Duration(f.timeoutFileSecond) * time.Second,
+		URL:     urlPath,
+		Method:  request.DELETE,
+		Header:  header,
 	}
 
-	exists, err := folder.PathExists(resourcePost.LocalPath)
+	_, err := f.sendRespRaw(c, "ResourcesDeletePath")
+	if err != nil {
+		return false, fmt.Errorf("delete path error\nremote path: %s\nerr: %v", remotePath, err)
+	}
+
+	return true, nil
+}
+
+// ResourcesPostFile
+// param post file by ResourcePostFile, ResourcePostFile.LocalFilePath must exist;
+// override will want override remote path, but success must enable the permission at filebrowser to modify files
+func (f *FileBrowserClient) ResourcesPostFile(resourceFile ResourcePostFile, override bool) (bool, error) {
+	if !f.IsLogin() {
+		return false, fmt.Errorf("plase Login then ResourcesPostFile")
+	}
+	if resourceFile.LocalFilePath == "" {
+		return false, fmt.Errorf("plase check LocalFilePath, now is empty for RemoteFilePath: %s", resourceFile.RemoteFilePath)
+	}
+
+	exists, err := folder.PathExists(resourceFile.LocalFilePath)
 	if err != nil || !exists {
-		return false, fmt.Errorf("plase check LocalPath, now is not exist at: %s , err: %v", resourcePost.LocalPath, err)
+		return false, fmt.Errorf("plase check LocalFilePath, now is not exist at: %s , err: %v", resourceFile.LocalFilePath, err)
 	}
-	if folder.PathIsDir(resourcePost.LocalPath) {
-		return false, fmt.Errorf("plase check LocalPath, now is path is folder at: %s", resourcePost.LocalPath)
+	if folder.PathIsDir(resourceFile.LocalFilePath) {
+		return false, fmt.Errorf("plase check LocalFilePath, now is path is folder at: %s", resourceFile.LocalFilePath)
 	}
 
-	urlPath := fmt.Sprintf("%s/%s", web_api.ApiResources(), resourcePost.RemotePath)
+	urlPath := fmt.Sprintf("%s/%s", web_api.ApiResources(), resourceFile.RemoteFilePath)
 	header := BaseHeader()
 	header[web_api.AuthHeadKey] = f.authHeadVal
 	c := request.Client{
@@ -196,15 +302,101 @@ func (f *FileBrowserClient) ResourcesPostOne(resourcePost ResourcePost, override
 			"override": strconv.FormatBool(override),
 		},
 		MultipartForm: request.MultipartForm{
-			Files: []string{resourcePost.LocalPath},
+			Files: []string{resourceFile.LocalFilePath},
 		},
 	}
-	_, err = f.sendPublic(c, "ResourcesPost")
+	_, err = f.sendRespRaw(c, "ResourcesPost")
 	if err != nil {
-		return false, fmt.Errorf("post file error\nremote: %s\nlocal: %s\nerr: %v", resourcePost.RemotePath, resourcePost.LocalPath, err)
+		return false, fmt.Errorf("post file error\nremote: %s\nlocal: %s\nerr: %v", resourceFile.RemoteFilePath, resourceFile.LocalFilePath, err)
 	}
 
 	return true, nil
+}
+
+// ResourcesPostDirectoryFiles
+// post directory full files by ResourcePostDirectory settings
+// ResourcePostDirectory.LocalDirectoryPath must exist
+// override will want override remote path, but success must enable the permission at filebrowser to modify files
+func (f *FileBrowserClient) ResourcesPostDirectoryFiles(resourceDirectory ResourcePostDirectory, override bool) (bool, error) {
+	if !f.IsLogin() {
+		return false, fmt.Errorf("plase Login then ResourcesPostDirectoryFiles")
+	}
+	if resourceDirectory.LocalDirectoryPath == "" {
+		return false, fmt.Errorf("plase check LocalDirectoryPath, now is empty for RemoteDirectoryPath: %s", resourceDirectory.RemoteDirectoryPath)
+	}
+	exists, err := folder.PathExists(resourceDirectory.LocalDirectoryPath)
+	if err != nil || !exists {
+		return false, fmt.Errorf("plase check LocalDirectoryPath, now is not exist at: %s , err: %v", resourceDirectory.LocalDirectoryPath, err)
+	}
+	if folder.PathIsFile(resourceDirectory.LocalDirectoryPath) {
+		return false, fmt.Errorf("plase check LocalDirectoryPath, now is path is file at: %s", resourceDirectory.LocalDirectoryPath)
+	}
+	var resourcePostFileList []ResourcePostFile
+	err = filepath.Walk(resourceDirectory.LocalDirectoryPath, func(filename string, fi os.FileInfo, err error) error {
+		if fi.IsDir() { // ignore dir
+			return nil
+		}
+		innerPath := strings.Replace(filename, resourceDirectory.LocalDirectoryPath, "", -1)
+		innerPath = strings.TrimPrefix(innerPath, "/")
+		resourcePostFileList = append(resourcePostFileList, ResourcePostFile{
+			LocalFilePath:  filename,
+			RemoteFilePath: fmt.Sprintf("%s/%s", resourceDirectory.RemoteDirectoryPath, innerPath),
+		})
+		return nil
+	})
+	if len(resourcePostFileList) == 0 {
+		return false, fmt.Errorf("plase check LocalDirectoryPath, has no files at: %s", resourceDirectory.LocalDirectoryPath)
+	}
+	if f.isDebug {
+		log.Print("debug: want ResourcesPostDirectoryFiles start\n")
+		for _, resourcePostFile := range resourcePostFileList {
+			log.Printf("debug: ResourcesPostDirectoryFiles\nLocalFilePath: %s\nRemoteFilePath: %s\n", resourcePostFile.LocalFilePath, resourcePostFile.RemoteFilePath)
+		}
+		log.Print("debug: want ResourcesPostDirectoryFiles end")
+	}
+
+	for _, resourcePostFile := range resourcePostFileList {
+		postFileResp, errPostFile := f.ResourcesPostFile(resourcePostFile, override)
+		if errPostFile != nil || !postFileResp {
+			return false, fmt.Errorf("post folder fail at\nLocalFilePath: %s\nRemoteFilePath: %s\nerr: %s", resourcePostFile.LocalFilePath, resourcePostFile.LocalFilePath, errPostFile)
+		}
+	}
+
+	return true, nil
+}
+
+// ResourceDownload
+// remotePath must exist and not empty;
+// localPath must not empty and parent folder must exist
+// override is overrider download
+func (f *FileBrowserClient) ResourceDownload(remotePath string, localPath string, override bool) error {
+	if !f.IsLogin() {
+		return fmt.Errorf("plase Login then ResourceDownload")
+	}
+	if remotePath == "" {
+		return fmt.Errorf("please check remotePath, now is empty")
+	}
+
+	if localPath == "" {
+		return fmt.Errorf("please check localPath, now is empty")
+	}
+
+	urlPath := fmt.Sprintf("%s/%s?auth=%s", web_api.ApiRaw(), remotePath, f.authHeadVal)
+	header := BaseHeader()
+	header[web_api.AuthHeadKey] = f.authHeadVal
+	c := request.Client{
+		Timeout: time.Duration(f.timeoutFileSecond) * time.Second,
+		URL:     urlPath,
+		Method:  request.GET,
+		Header:  header,
+	}
+
+	_, err := f.sendSaveFile(c, "ResourceDownload", localPath, override)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 type ShareResource struct {
@@ -212,18 +404,29 @@ type ShareResource struct {
 	ShareConfig web_api.ShareConfig
 }
 
-func (f *FileBrowserClient) SharePost(shareResource ShareResource) (web_api.ShareLink, error) {
-	var shareLink web_api.ShareLink
+type ShareContent struct {
+	ShareLink      web_api.ShareLink `json:"share_link"`
+	RemotePath     string            `json:"remote_path"`
+	DownloadUrl    string            `json:"download_url"`
+	DownloadPage   string            `json:"download_page"`
+	DownloadPasswd string            `json:"page_passwd,omitempty"`
+}
+
+// SharePost
+// post share by ShareResource settings
+// ShareResource.RemotePath must exist
+func (f *FileBrowserClient) SharePost(shareResource ShareResource) (ShareContent, error) {
+	var shareContent ShareContent
 	if !f.IsLogin() {
-		return shareLink, fmt.Errorf("plase Login then SharePost")
+		return shareContent, fmt.Errorf("plase Login then SharePost")
 	}
 
 	if shareResource.RemotePath == "" {
-		return shareLink, fmt.Errorf("please check shareResource.RemotePath , now is empty")
+		return shareContent, fmt.Errorf("please check shareResource.RemoteFilePath , now is empty")
 	}
 
 	if web_api.CheckFalseShareConfig(shareResource.ShareConfig) {
-		return shareLink, fmt.Errorf("please check shareResource.ShareConfig error of setting most is Unit not in %v , or Expires is less than 0", web_api.ShareUnitDefine())
+		return shareContent, fmt.Errorf("please check shareResource.ShareConfig error of setting most is Unit not in %v , or Expires is less than 0", web_api.ShareUnitDefine())
 	}
 
 	urlPath := fmt.Sprintf("%s/%s", web_api.ApiShare(), shareResource.RemotePath)
@@ -237,20 +440,64 @@ func (f *FileBrowserClient) SharePost(shareResource ShareResource) (web_api.Shar
 		JSON:    shareResource.ShareConfig,
 	}
 
-	_, err := f.sendPublicJson(c, &shareLink, "SharePost")
+	var shareLink web_api.ShareLink
+	_, err := f.sendRespJson(c, &shareLink, "SharePost")
 	if err != nil {
-		return shareLink, err
+		return shareContent, err
 	}
-
-	return shareLink, nil
+	shareContent.ShareLink = shareLink
+	shareContent.RemotePath = shareResource.RemotePath
+	shareContent.DownloadPage = fmt.Sprintf("%s/%s", web_api.ShareUrlBase(), shareLink.Hash)
+	if shareResource.ShareConfig.Password != "" {
+		shareContent.DownloadPasswd = shareResource.ShareConfig.Password
+		shareContent.DownloadUrl = fmt.Sprintf("%s/%s?token=%s", web_api.ApiPublicDL(), shareLink.Hash, shareLink.Token)
+	} else {
+		shareContent.DownloadUrl = fmt.Sprintf("%s/%s", web_api.ApiPublicDL(), shareLink.Hash)
+	}
+	return shareContent, nil
 }
 
+// ShareGetByRemotePath
+// get share by remote path
+// return shareLink will be list
+func (f *FileBrowserClient) ShareGetByRemotePath(remotePath string) ([]web_api.ShareLink, error) {
+	var shareLinks []web_api.ShareLink
+
+	if !f.IsLogin() {
+		return shareLinks, fmt.Errorf("plase Login then ShareGetByRemotePath")
+	}
+
+	if remotePath == "" {
+		return shareLinks, fmt.Errorf("want get remotePath is empty")
+	}
+
+	urlPath := fmt.Sprintf("%s/%s", web_api.ApiShare(), remotePath)
+	header := BaseHeader()
+	header[web_api.AuthHeadKey] = f.authHeadVal
+
+	c := request.Client{
+		Timeout: time.Duration(f.timeoutSecond) * time.Second,
+		URL:     urlPath,
+		Method:  request.GET,
+		Header:  header,
+	}
+	_, err := f.sendRespJson(c, &shareLinks, "ShareGetByRemotePath")
+	if err != nil {
+		return shareLinks, err
+	}
+
+	return shareLinks, nil
+}
+
+// SharesGet
+// get full shares by user.
+// warning: do not use this api at production environment
 func (f *FileBrowserClient) SharesGet() ([]web_api.ShareLink, error) {
 	var shareLinks []web_api.ShareLink
+
 	if !f.IsLogin() {
 		return shareLinks, fmt.Errorf("plase Login then SharesGet")
 	}
-
 	header := BaseHeader()
 	header[web_api.AuthHeadKey] = f.authHeadVal
 
@@ -260,10 +507,39 @@ func (f *FileBrowserClient) SharesGet() ([]web_api.ShareLink, error) {
 		Method:  request.GET,
 		Header:  header,
 	}
-	_, err := f.sendPublicJson(c, &shareLinks, "SharesGet")
+	_, err := f.sendRespJson(c, &shareLinks, "SharesGet")
 	if err != nil {
 		return shareLinks, err
 	}
 
 	return shareLinks, nil
+}
+
+// ShareDelete
+// delete share by share hash
+// warning: For security purposes, this api always returns correct if the permission is passed
+func (f *FileBrowserClient) ShareDelete(hash string) (bool, error) {
+
+	if !f.IsLogin() {
+		return false, fmt.Errorf("plase Login then ShareDelete")
+	}
+	if hash == "" {
+		return false, fmt.Errorf("want delete share hash is empty")
+	}
+	header := BaseHeader()
+	header[web_api.AuthHeadKey] = f.authHeadVal
+	urlPath := fmt.Sprintf("%s/%s", web_api.ApiShare(), hash)
+	c := request.Client{
+		Timeout: time.Duration(f.timeoutSecond) * time.Second,
+		URL:     urlPath,
+		Method:  request.DELETE,
+		Header:  header,
+	}
+
+	_, err := f.sendRespRaw(c, "ShareDelete")
+	if err != nil {
+		return false, fmt.Errorf("delete share error\nhash: %s\nerr: %v", hash, err)
+	}
+
+	return true, nil
 }

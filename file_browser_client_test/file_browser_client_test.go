@@ -6,6 +6,7 @@ import (
 	"github.com/sinlov/filebrowser-client/tools/folder"
 	"github.com/sinlov/filebrowser-client/web_api"
 	"github.com/stretchr/testify/assert"
+	"path"
 	"strings"
 	"testing"
 )
@@ -98,19 +99,23 @@ func TestResourcesGet(t *testing.T) {
 		t.Log("must check env then test")
 		return
 	}
-	t.Logf("~> mock ResourcesGet")
-	// mock ResourcesGet
+	t.Logf("~> mock ResourcesGetCheckSum")
+	// mock ResourcesGetCheckSum
 	client, err := tryLoginClient(t, envDebug)
 	if err != nil {
 		t.Errorf("login fail!")
 		return
 	}
-	// do ResourcesGet
-	t.Logf("~> do ResourcesGet")
+	// do ResourcesGetCheckSum
+	t.Logf("~> do ResourcesGetCheckSum")
+	_, err = client.ResourcesGetCheckSum("", "abc")
+	if err == nil {
+		t.Errorf("client.ResourcesGetCheckSum not cover unsupport checksum")
+	}
 	resources, err := client.ResourcesGet("")
-	// verify ResourcesGet
+	// verify ResourcesGetCheckSum
 	if err != nil {
-		t.Errorf("client.ResourcesGet err: %v", err)
+		t.Errorf("client.ResourcesGetCheckSum err: %v", err)
 	}
 	assert.Equal(t, "/", resources.Path)
 }
@@ -143,14 +148,14 @@ func TestResourcesPostOne(t *testing.T) {
 		t.Log("must check env then test")
 		return
 	}
-	// mock ResourcesPostOne
-	t.Logf("~> mock ResourcesPostOne")
-	testDataFolderPath, err := initPostFile()
+	// mock ResourcesPostFile
+	t.Logf("~> mock ResourcesPostFile")
+	testDataPostFolderPath, err := initTestDataPostFileDir()
 	if err != nil {
 		t.Error(err)
 	}
 
-	walkAllJsonFileBySuffix, err := folder.WalkAllFileBySuffix(testDataFolderPath, "json")
+	walkAllJsonFileBySuffix, err := folder.WalkAllFileBySuffix(testDataPostFolderPath, "json")
 	if err != nil {
 		t.Error(err)
 	}
@@ -158,8 +163,8 @@ func TestResourcesPostOne(t *testing.T) {
 		t.Fatalf("walkAllJsonFileBySuffix len is 0")
 	}
 
-	t.Logf("~> do ResourcesPostOne")
-	// do ResourcesPostOne
+	t.Logf("~> do ResourcesPostFile")
+	// do ResourcesPostFile
 	client, err := tryLoginClient(t, envDebug)
 	if err != nil {
 		t.Errorf("login fail!")
@@ -167,22 +172,22 @@ func TestResourcesPostOne(t *testing.T) {
 	}
 
 	localJsonFilePath := walkAllJsonFileBySuffix[len(walkAllJsonFileBySuffix)-1]
-	remotePath := strings.Replace(localJsonFilePath, testDataFolderPath, "", -1)
+	remotePath := strings.Replace(localJsonFilePath, testDataPostFolderPath, "", -1)
 	remotePath = strings.TrimPrefix(remotePath, "/")
-	var resourcePost = file_browser_client.ResourcePost{
-		LocalPath:  localJsonFilePath,
-		RemotePath: remotePath,
+	var resourcePost = file_browser_client.ResourcePostFile{
+		LocalFilePath:  localJsonFilePath,
+		RemoteFilePath: remotePath,
 	}
-	postOne, err := client.ResourcesPostOne(resourcePost, true)
+	postOne, err := client.ResourcesPostFile(resourcePost, true)
 	if err != nil {
-		t.Errorf("try client.ResourcesPostOne err: %v", err)
+		t.Errorf("try client.ResourcesPostFile err: %v", err)
 	}
-	// verify ResourcesPostOne
+	// verify ResourcesPostFile
 	assert.True(t, postOne)
 
-	postAgain, err := client.ResourcesPostOne(resourcePost, false)
+	postAgain, err := client.ResourcesPostFile(resourcePost, false)
 	if err == nil {
-		t.Errorf("try client.ResourcesPostOne not cover override")
+		t.Errorf("try client.ResourcesPostFile not cover override")
 	}
 
 	assert.False(t, postAgain)
@@ -195,14 +200,18 @@ func TestSharesPost(t *testing.T) {
 		t.Log("must check env then test")
 		return
 	}
-	// mock ResourcesPostOne
-	t.Logf("~> mock ResourcesPostOne")
-	testDataFolderPath, err := initPostFile()
+	// mock ResourcesPostFile
+	t.Logf("~> mock ResourcesPostFile")
+	testPostDataFolderPath, err := initTestDataPostFileDir()
+	if err != nil {
+		t.Error(err)
+	}
+	testDataDownloadFolderPath, err := initTestDataDownloadDir()
 	if err != nil {
 		t.Error(err)
 	}
 
-	walkAllJsonFileBySuffix, err := folder.WalkAllFileBySuffix(testDataFolderPath, "json")
+	walkAllJsonFileBySuffix, err := folder.WalkAllFileBySuffix(testPostDataFolderPath, "json")
 	if err != nil {
 		t.Error(err)
 	}
@@ -211,7 +220,7 @@ func TestSharesPost(t *testing.T) {
 	}
 
 	localJsonFilePath := walkAllJsonFileBySuffix[len(walkAllJsonFileBySuffix)-1]
-	remotePath := strings.Replace(localJsonFilePath, testDataFolderPath, "", -1)
+	remotePath := strings.Replace(localJsonFilePath, testPostDataFolderPath, "", -1)
 	remotePath = strings.TrimPrefix(remotePath, "/")
 
 	// do SharePost
@@ -222,15 +231,49 @@ func TestSharesPost(t *testing.T) {
 		return
 	}
 
-	var resourcePost = file_browser_client.ResourcePost{
-		LocalPath:  localJsonFilePath,
-		RemotePath: remotePath,
+	var resourcePost = file_browser_client.ResourcePostFile{
+		LocalFilePath:  localJsonFilePath,
+		RemoteFilePath: remotePath,
 	}
-	postOne, err := client.ResourcesPostOne(resourcePost, true)
+	postOne, err := client.ResourcesPostFile(resourcePost, true)
 	if err != nil {
-		t.Errorf("try client.ResourcesPostOne err: %v", err)
+		t.Errorf("try client.ResourcesPostFile err: %v", err)
 	}
 	assert.True(t, postOne)
+
+	remotePathGetCheckSum256, err := client.ResourcesGetCheckSum(remotePath, web_api.ChecksumSha256)
+	if err != nil {
+		t.Error(err)
+	}
+	assert.NotNil(t, remotePathGetCheckSum256.Checksums)
+
+	downloadLocalPath := path.Join(testDataDownloadFolderPath, remotePath)
+	t.Logf("downloadLocalPath: %s", downloadLocalPath)
+	pathParent := folder.PathParent(downloadLocalPath)
+	_ = folder.RmDirForce(pathParent)
+
+	err = client.ResourceDownload(remotePath, downloadLocalPath, true)
+	if err == nil {
+		t.Error("not cover ResourceDownload not init parent path")
+	}
+	err = folder.Mkdir(pathParent)
+	if err != nil {
+		t.Error(err)
+	}
+	err = client.ResourceDownload(remotePath, downloadLocalPath, true)
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = client.ResourceDownload(remotePath, downloadLocalPath, false)
+	if err == nil {
+		t.Error("not cover ResourceDownload not override path")
+	}
+
+	err = client.ResourceDownload(remotePath, downloadLocalPath, true)
+	if err != nil {
+		t.Error(err)
+	}
 
 	t.Logf("~> do SharePost")
 	passWord := randomStr(10)
@@ -248,13 +291,63 @@ func TestSharesPost(t *testing.T) {
 	}
 	// verify SharePost
 	assert.NotNil(t, sharesResp)
-	assert.NotEqual(t, "", sharesResp.Hash)
-	t.Logf("------- path: %s\ndonwload page: %s/%s \npasswd: %s", remotePath, web_api.ShareUrlBase(), sharesResp.Hash, passWord)
-	t.Logf("download url: %s/%s", web_api.ApiPublicDL(), sharesResp.Hash)
+	assert.NotEqual(t, "", sharesResp.ShareLink.Hash)
+	t.Logf("------- path: %s\ndonwload page: %s \npasswd: %s", sharesResp.RemotePath, sharesResp.DownloadPage, sharesResp.DownloadPasswd)
+	t.Logf("download url: %s", sharesResp.DownloadUrl)
+
+	_, err = client.ShareGetByRemotePath("")
+	if err == nil {
+		t.Error("not cover ShareGetByRemotePath want delete hash is empty")
+	}
+	shareGetByRemotePath, err := client.ShareGetByRemotePath(remotePath)
+	if err != nil {
+		t.Error(err)
+	}
+	assert.NotNil(t, shareGetByRemotePath)
 
 	shareLinks, err := client.SharesGet()
 	if err != nil {
 		t.Error(err)
 	}
 	assert.NotNil(t, shareLinks)
+
+	_, err = client.ShareDelete("")
+	if err == nil {
+		t.Error("not cover ShareDelete want delete hash is empty")
+	}
+	shareHashMockFail := sharesResp.ShareLink.Hash + "xxx"
+	shareDeleteResp, err := client.ShareDelete(shareHashMockFail)
+	if err != nil {
+		t.Error("not cover each hash delete can be guessed")
+	}
+	assert.True(t, shareDeleteResp)
+
+	//_, err = client.ShareDelete(sharesResp.Hash)
+	//if err != nil {
+	//	t.Error(err)
+	//}
+
+	deletePathRes, err := client.ResourcesDeletePath(remotePath)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	assert.True(t, deletePathRes)
+
+	err = client.ResourceDownload(remotePath, downloadLocalPath, true)
+	if err == nil {
+		t.Error("not cover client.ResourceDownload 404 not found")
+	}
+
+	var remoteDirPath = "inner_1"
+	var resourceDirectory = file_browser_client.ResourcePostDirectory{
+		LocalDirectoryPath:  path.Join(testPostDataFolderPath, remoteDirPath),
+		RemoteDirectoryPath: remoteDirPath,
+	}
+	postDirectoryFilesRes, err := client.ResourcesPostDirectoryFiles(resourceDirectory, true)
+	if err != nil {
+		t.Error(err)
+	}
+	assert.True(t, postDirectoryFilesRes)
 }

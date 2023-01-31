@@ -8,6 +8,35 @@ import (
 	"strings"
 )
 
+// WalkAllFilePath
+// can walk all path then return as list, by under path pattern
+func WalkAllFilePath(path string) ([]string, error) {
+	fiRoot, err := os.Stat(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, fmt.Errorf("want Walk not exist at path: %s", path)
+		}
+		return nil, fmt.Errorf("want Walk not read at path: %s , err: %v", path, err)
+	}
+	if !fiRoot.IsDir() {
+		return nil, fmt.Errorf("want Walk path is file, at: %s", path)
+	}
+	files := make([]string, 0, 30)
+	err = filepath.Walk(path, func(filename string, fi os.FileInfo, err error) error {
+		if fi.IsDir() { // ignore dir
+			return nil
+		}
+		files = append(files, filename)
+		return nil
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("now Walk path: %s , err: %v", path, err)
+	}
+
+	return files, nil
+}
+
 // WalkAllByMatchPath
 // can walk all path then return as list, by under path pattern
 func WalkAllByMatchPath(path string, pattern string, ignoreFolder bool) ([]string, error) {
