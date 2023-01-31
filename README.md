@@ -32,7 +32,7 @@ $ git ls-remote -q http://github.com/sinlov/filebrowser-client.git
 # test depends see full version
 $ go list -mod=readonly -v -m -versions github.com/sinlov/filebrowser-client
 # or use last version add go.mod by script
-$ echo "go mod edit -require=$(go list -m -versions github.com/sinlov/filebrowser-client | awk '{print $1 "@" $NF}')"
+$ echo "go mod edit -require=$(go list -mod=readonly -m -versions github.com/sinlov/filebrowser-client | awk '{print $1 "@" $NF}')"
 $ echo "go mod vendor"
 ```
 
