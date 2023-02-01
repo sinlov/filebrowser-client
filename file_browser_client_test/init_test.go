@@ -35,7 +35,7 @@ func envCheck(t *testing.T) bool {
 	}
 	for _, item := range mustSetEnvList {
 		if os.Getenv(item) == "" {
-			t.Logf("plasee set env: %v, than run test", mustSetEnvList)
+			t.Logf("plasee set env: %s, than run test\nfull need set env %v", item, mustSetEnvList)
 			return true
 		}
 	}

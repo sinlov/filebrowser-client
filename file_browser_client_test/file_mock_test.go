@@ -2,8 +2,8 @@ package file_browser_client_test
 
 import (
 	"fmt"
-	"github.com/sinlov/filebrowser-client/tools/folder"
 	"path"
+	"path/filepath"
 )
 
 func initTestDataPostFileDir() (string, error) {
@@ -21,7 +21,7 @@ func initTestDataPostFileDir() (string, error) {
 	}
 
 	innerLev1JsonCnt := 5
-	innerLev1Folder := folder.PathJoin(testPostDataFolderPath, "inner_1")
+	innerLev1Folder := filepath.Join(testPostDataFolderPath, "inner_1")
 	err = addTextFileByTry(innerLev1Folder, "data", "json", innerLev1JsonCnt)
 	if err != nil {
 		return "", err
@@ -29,7 +29,7 @@ func initTestDataPostFileDir() (string, error) {
 
 	innerLev11JsonCnt := 4
 	innerLev11TxtCnt := 3
-	innerLev11Folder := folder.PathJoin(innerLev1Folder, "inner_1_1")
+	innerLev11Folder := filepath.Join(innerLev1Folder, "inner_1_1")
 	err = addTextFileByTry(innerLev11Folder, "data", "json", innerLev11JsonCnt)
 	if err != nil {
 		return "", err
@@ -41,7 +41,7 @@ func initTestDataPostFileDir() (string, error) {
 
 	innerLev111JsonCnt := 4
 	innerLev111TxtCnt := 3
-	innerLev111Folder := folder.PathJoin(innerLev1Folder, "inner_1_1_1")
+	innerLev111Folder := filepath.Join(innerLev1Folder, "inner_1_1_1")
 	err = addTextFileByTry(innerLev111Folder, "data", "json", innerLev111JsonCnt)
 	if err != nil {
 		return "", err
@@ -53,7 +53,7 @@ func initTestDataPostFileDir() (string, error) {
 
 	innerLev12JsonCnt := 4
 	innerLev12TxtCnt := 3
-	innerLev12Folder := folder.PathJoin(innerLev1Folder, "inner_1_2")
+	innerLev12Folder := filepath.Join(innerLev1Folder, "inner_1_2")
 	err = addTextFileByTry(innerLev12Folder, "data", "json", innerLev12JsonCnt)
 	if err != nil {
 		return "", err
@@ -77,8 +77,8 @@ func initTestDataDownloadDir() (string, error) {
 		return "", err
 	}
 	testDownloadDataFolderPath := path.Join(testDataFolderPath, "download")
-	if !folder.PathExistsFast(testDownloadDataFolderPath) {
-		errMkdir := folder.Mkdir(testDownloadDataFolderPath)
+	if !pathExistsFast(testDownloadDataFolderPath) {
+		errMkdir := mkdir(testDownloadDataFolderPath)
 		if errMkdir != nil {
 			return "", errMkdir
 		}
@@ -88,8 +88,8 @@ func initTestDataDownloadDir() (string, error) {
 
 func addTextFileByTry(targetDir, fileHead, suffix string, cnt int) error {
 
-	if !folder.PathExistsFast(targetDir) {
-		err := folder.Mkdir(targetDir)
+	if !pathExistsFast(targetDir) {
+		err := mkdir(targetDir)
 		if err != nil {
 			return err
 		}
@@ -102,9 +102,9 @@ func addTextFileByTry(targetDir, fileHead, suffix string, cnt int) error {
 
 	for i := 0; i < cnt; i++ {
 		fName := fmt.Sprintf("%s_%d.%s", fileHead, i, suffix)
-		newJsonPath := folder.PathJoin(targetDir, fName)
+		newJsonPath := filepath.Join(targetDir, fName)
 		foo.Foo = i
-		errJsonWrite := folder.WriteFileAsJsonBeauty(newJsonPath, foo, true)
+		errJsonWrite := writeFileAsJsonBeauty(newJsonPath, foo, true)
 		if errJsonWrite != nil {
 			return errJsonWrite
 		}

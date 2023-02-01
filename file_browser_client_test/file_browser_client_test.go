@@ -151,12 +151,12 @@ func TestResourcesPostOne(t *testing.T) {
 	t.Logf("~> mock ResourcesPostFile")
 	testDataPostFolderPath, err := initTestDataPostFileDir()
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	walkAllJsonFileBySuffix, err := folder.WalkAllFileBySuffix(testDataPostFolderPath, "json")
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	if len(walkAllJsonFileBySuffix) == 0 {
 		t.Fatalf("walkAllJsonFileBySuffix len is 0")
@@ -180,12 +180,12 @@ func TestResourcesPostOne(t *testing.T) {
 	err = client.ResourcesPostFile(resourcePost, true)
 	// verify ResourcesPostFile
 	if err != nil {
-		t.Errorf("try client.ResourcesPostFile err: %v", err)
+		t.Fatalf("try client.ResourcesPostFile err: %v", err)
 	}
 
 	err = client.ResourcesPostFile(resourcePost, false)
 	if err == nil {
-		t.Errorf("try client.ResourcesPostFile not cover override")
+		t.Fatalf("try client.ResourcesPostFile not cover override")
 	}
 
 }
@@ -213,7 +213,7 @@ func TestSharesPost(t *testing.T) {
 		t.Error(err)
 	}
 	if len(walkAllJsonFileBySuffix) == 0 {
-		t.Fatalf("walkAllJsonFileBySuffix len is 0")
+		t.Error("walkAllJsonFileBySuffix len is 0")
 	}
 
 	localJsonFilePath := walkAllJsonFileBySuffix[len(walkAllJsonFileBySuffix)-1]
@@ -234,12 +234,12 @@ func TestSharesPost(t *testing.T) {
 	}
 	err = client.ResourcesPostFile(resourcePost, true)
 	if err != nil {
-		t.Errorf("try client.ResourcesPostFile err: %v", err)
+		t.Fatalf("try client.ResourcesPostFile err: %v", err)
 	}
 
 	remotePathGetCheckSum256, err := client.ResourcesGetCheckSum(remotePath, web_api.ChecksumSha256)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	assert.NotNil(t, remotePathGetCheckSum256.Checksums)
 
@@ -250,25 +250,25 @@ func TestSharesPost(t *testing.T) {
 
 	err = client.ResourceDownload(remotePath, downloadLocalPath, true)
 	if err == nil {
-		t.Error("not cover ResourceDownload not init parent path")
+		t.Fatal("not cover ResourceDownload not init parent path")
 	}
 	err = folder.Mkdir(pathParent)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	err = client.ResourceDownload(remotePath, downloadLocalPath, true)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	err = client.ResourceDownload(remotePath, downloadLocalPath, false)
 	if err == nil {
-		t.Error("not cover ResourceDownload not override path")
+		t.Fatal("not cover ResourceDownload not override path")
 	}
 
 	err = client.ResourceDownload(remotePath, downloadLocalPath, true)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	t.Logf("~> do SharePost")
@@ -283,7 +283,7 @@ func TestSharesPost(t *testing.T) {
 	}
 	sharesResp, err := client.SharePost(shareResource)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	// verify SharePost
 	assert.NotNil(t, sharesResp)
@@ -293,28 +293,28 @@ func TestSharesPost(t *testing.T) {
 
 	_, err = client.ShareGetByRemotePath("")
 	if err == nil {
-		t.Error("not cover ShareGetByRemotePath want delete hash is empty")
+		t.Fatal("not cover ShareGetByRemotePath want delete hash is empty")
 	}
 	shareGetByRemotePath, err := client.ShareGetByRemotePath(remotePath)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	assert.NotNil(t, shareGetByRemotePath)
 
 	shareLinks, err := client.SharesGet()
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	assert.NotNil(t, shareLinks)
 
 	_, err = client.ShareDelete("")
 	if err == nil {
-		t.Error("not cover ShareDelete want delete hash is empty")
+		t.Fatal("not cover ShareDelete want delete hash is empty")
 	}
 	shareHashMockFail := sharesResp.ShareLink.Hash + "xxx"
 	shareDeleteResp, err := client.ShareDelete(shareHashMockFail)
 	if err != nil {
-		t.Error("not cover each hash delete can be guessed")
+		t.Fatal("not cover each hash delete can be guessed")
 	}
 	assert.True(t, shareDeleteResp)
 
@@ -326,14 +326,14 @@ func TestSharesPost(t *testing.T) {
 	deletePathRes, err := client.ResourcesDeletePath(remotePath)
 
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	assert.True(t, deletePathRes)
 
 	err = client.ResourceDownload(remotePath, downloadLocalPath, true)
 	if err == nil {
-		t.Error("not cover client.ResourceDownload 404 not found")
+		t.Fatal("not cover client.ResourceDownload 404 not found")
 	}
 
 	var remoteDirPath = "inner_1"
@@ -343,7 +343,7 @@ func TestSharesPost(t *testing.T) {
 	}
 	postDirectoryFilesRes, err := client.ResourcesPostDirectoryFiles(resourceDirectory, true)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	assert.True(t, postDirectoryFilesRes.FullSuccess)
 	assert.Greater(t, len(postDirectoryFilesRes.SuccessFiles), len(postDirectoryFilesRes.FailFiles))
