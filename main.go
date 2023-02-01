@@ -9,8 +9,11 @@ import (
 	"time"
 )
 
-// Version of cli
-var Version = "v0.1.2"
+const (
+	// Version of cli
+	Version = "v0.1.3"
+)
+
 var (
 	fileBrowserClient file_browser_client.FileBrowserClient
 	isCliDebug        = false
@@ -92,6 +95,7 @@ func publicFlagsCheckAndInitFileBrowserClient(context *cli.Context) error {
 	isCliDebug := context.Bool("config.debug")
 	fileBrowserClient.Debug(isCliDebug)
 	if isCliDebug {
+		log.Printf("cli version is %s", Version)
 		log.Println("publicFlagsCheckAndInitFileBrowserClient finish")
 	}
 	return nil

@@ -1,3 +1,12 @@
+## <small>0.1.3 (2023-02-01)</small>
+
+* feat: change private func sendRespRaw has showCurl to close send file log ([65f25c5](https://github.com/sinlov/filebrowser-client/commit/65f25c5))
+* test: add some unit test case ([60d2eda](https://github.com/sinlov/filebrowser-client/commit/60d2eda))
+* docs: add help of mod require ([46332bd](https://github.com/sinlov/filebrowser-client/commit/46332bd))
+* docs: update help of version use ([4766c6b](https://github.com/sinlov/filebrowser-client/commit/4766c6b))
+
+
+
 ## <small>0.1.2 (2023-01-31)</small>
 
 * feat: add github.com/urfave/cli/v2 for cli ([80327a4](https://github.com/sinlov/filebrowser-client/commit/80327a4))
