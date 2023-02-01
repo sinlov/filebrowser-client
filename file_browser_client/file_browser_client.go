@@ -80,10 +80,12 @@ func (f *FileBrowserClient) client(
 	return fbClient, nil
 }
 
-func (f *FileBrowserClient) sendRespRaw(c request.Client, apiName string) (*response.Sugar, error) {
+func (f *FileBrowserClient) sendRespRaw(c request.Client, apiName string, showCurl bool) (*response.Sugar, error) {
 	if f.isDebug {
 		log.Printf("debug: FileBrowserClient sendRespRaw try user: [ %s ] url: %s ", f.username, c.URL)
-		c.PrintCURL()
+		if showCurl {
+			c.PrintCURL()
+		}
 	}
 	send := c.Send()
 	if !send.OK() {
@@ -183,7 +185,7 @@ func (f *FileBrowserClient) Login() error {
 			Password: f.password,
 		},
 	}
-	send, err := f.sendRespRaw(c, "Login")
+	send, err := f.sendRespRaw(c, "Login", true)
 	if err != nil {
 		return err
 	}
@@ -265,7 +267,7 @@ func (f *FileBrowserClient) ResourcesDeletePath(remotePath string) (bool, error)
 		Header:  header,
 	}
 
-	_, err := f.sendRespRaw(c, "ResourcesDeletePath")
+	_, err := f.sendRespRaw(c, "ResourcesDeletePath", true)
 	if err != nil {
 		return false, fmt.Errorf("delete path error\nremote path: %s\nerr: %v", remotePath, err)
 	}
@@ -307,7 +309,7 @@ func (f *FileBrowserClient) ResourcesPostFile(resourceFile ResourcePostFile, ove
 			Files: []string{resourceFile.LocalFilePath},
 		},
 	}
-	_, err = f.sendRespRaw(c, "ResourcesPost")
+	_, err = f.sendRespRaw(c, "ResourcesPost", false)
 	if err != nil {
 		return fmt.Errorf("post file error\nremote: %s\nlocal: %s\nerr: %v", resourceFile.RemoteFilePath, resourceFile.LocalFilePath, err)
 	}
@@ -555,7 +557,7 @@ func (f *FileBrowserClient) ShareDelete(hash string) (bool, error) {
 		Header:  header,
 	}
 
-	_, err := f.sendRespRaw(c, "ShareDelete")
+	_, err := f.sendRespRaw(c, "ShareDelete", true)
 	if err != nil {
 		return false, fmt.Errorf("delete share error\nhash: %s\nerr: %v", hash, err)
 	}
