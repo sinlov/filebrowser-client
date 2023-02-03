@@ -50,3 +50,63 @@ func Test_Str2LineRaw(t *testing.T) {
 	assert.Equal(t, "mock message commit\\nmore line\\nand more line\\n", lineRaw)
 	// verify _Str2LineRaw
 }
+
+func TestStrArrRemoveDuplicates(t *testing.T) {
+	// mock StrArrRemoveDuplicates
+
+	t.Logf("~> mock StrArrRemoveDuplicates")
+	var fooArr = []string{
+		"a", "b", "c", "b", "a", "d", "f",
+	}
+	// do StrArrRemoveDuplicates
+	t.Logf("~> do StrArrRemoveDuplicates")
+	rdFooArr := StrArrRemoveDuplicates(fooArr)
+	// verify StrArrRemoveDuplicates
+	assert.Equal(t, 5, len(rdFooArr))
+
+	var barArr []string
+	for i := 0; i < 5000; i++ {
+		barArr = append(barArr, string(rune(i)))
+	}
+	for i := 1000; i < 2000; i++ {
+		barArr = append(barArr, string(rune(i)))
+	}
+	for i := 3000; i < 4000; i++ {
+		barArr = append(barArr, string(rune(i)))
+	}
+	for i := 3000; i < 5000; i++ {
+		barArr = append(barArr, string(rune(i)))
+	}
+
+	rdBarArr := StrArrRemoveDuplicates(barArr)
+	// verify StrArrRemoveDuplicates
+	assert.Equal(t, 5000, len(rdBarArr))
+}
+
+func BenchmarkStrArrRemoveDuplicates(b *testing.B) {
+	var fooArr = []string{
+		"a", "b", "c", "b", "a", "d", "f",
+	}
+	var barArr []string
+	for i := 0; i < 5000; i++ {
+		barArr = append(barArr, string(rune(i)))
+	}
+	for i := 1000; i < 2000; i++ {
+		barArr = append(barArr, string(rune(i)))
+	}
+	for i := 3000; i < 4000; i++ {
+		barArr = append(barArr, string(rune(i)))
+	}
+	for i := 3000; i < 5000; i++ {
+		barArr = append(barArr, string(rune(i)))
+	}
+	for i := 0; i < b.N; i++ {
+		rdFooArr := StrArrRemoveDuplicates(fooArr)
+		// verify StrArrRemoveDuplicates
+		assert.Equal(b, 5, len(rdFooArr))
+
+		rdBarArr := StrArrRemoveDuplicates(barArr)
+		// verify StrArrRemoveDuplicates
+		assert.Equal(b, 5000, len(rdBarArr))
+	}
+}
