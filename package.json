@@ -1,6 +1,6 @@
 {
   "name": "filebrowser-client",
-  "version": "v0.1.3",
+  "version": "0.2.1",
   "description": "filebrowser of golang web client",
   "main": "index.js",
   "directories": {
