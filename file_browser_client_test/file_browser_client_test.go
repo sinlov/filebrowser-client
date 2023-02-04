@@ -117,7 +117,7 @@ func TestResourcesGet(t *testing.T) {
 	if err != nil {
 		t.Errorf("client.ResourcesGetCheckSum err: %v", err)
 	}
-	assert.Equal(t, string(filepath.Separator), resources.Path)
+	assert.Equal(t, `/`, resources.Path)
 }
 
 func TestResourceGet_Not_Found(t *testing.T) {

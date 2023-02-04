@@ -21,7 +21,7 @@ func WalkAllByGlob(path string, glob string, ignoreFolder bool) ([]string, error
 	if !fiRoot.IsDir() {
 		return nil, fmt.Errorf("want Walk path is file, at: %s", path)
 	}
-	pathOfGlob := fmt.Sprintf("%s%s%s", path, string(filepath.Separator), glob)
+	pathOfGlob := fmt.Sprintf("%s%s%s", path, `/`, glob)
 	matches, err := filepath.Glob(pathOfGlob)
 	if err != nil {
 		return nil, fmt.Errorf("want Walk by path %s by glob %s ,err: %v", path, glob, err)
