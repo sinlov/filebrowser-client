@@ -9,6 +9,13 @@ All notable changes to this project will be documented in this file. See [standa
 
 * let SharePost support Infinite when expires set 0 ([803a125](https://github.com/sinlov/filebrowser-client/commit/803a12515f0368643c0f43232932fd64c02d72cb))
 
+## [0.5.0](https://github.com/sinlov/filebrowser-client/compare/v0.4.0...v0.5.0) (2023-02-04)
+
+
+### Features
+
+* let SharePost support Infinite when expires set 0 ([803a125](https://github.com/sinlov/filebrowser-client/commit/803a12515f0368643c0f43232932fd64c02d72cb))
+
 ## [0.4.0](https://github.com/sinlov/filebrowser-client/compare/v0.3.0...v0.4.0) (2023-02-04)
 
 
