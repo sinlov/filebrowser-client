@@ -24,9 +24,9 @@ const (
 // ShareConfig
 // @doc https://github.com/filebrowser/filebrowser/blob/master/share/share.go
 type ShareConfig struct {
-	Password string `json:"password"`
-	Expires  string `json:"expires"`
-	Unit     string `json:"unit"`
+	Password string `json:"password,omitempty"`
+	Expires  string `json:"expires,omitempty"`
+	Unit     string `json:"unit,omitempty"`
 }
 
 var defineShareUnit []string

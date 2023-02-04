@@ -543,12 +543,30 @@ func (f *FileBrowserClient) SharePost(shareResource ShareResource) (ShareContent
 	urlPath := fmt.Sprintf("%s/%s", web_api.ApiShare(), shareResource.RemotePath)
 	header := BaseHeader()
 	header[web_api.AuthHeadKey] = f.authHeadVal
-	c := request.Client{
-		Timeout: time.Duration(f.timeoutSecond) * time.Second,
-		URL:     urlPath,
-		Method:  request.POST,
-		Header:  header,
-		JSON:    shareResource.ShareConfig,
+	parseExpires, errParseExpires := strconv.ParseInt(shareResource.ShareConfig.Expires, 10, 0)
+	if errParseExpires != nil {
+		return shareContent, fmt.Errorf("please check shareResource.ShareConfig.Expires err: %v", errParseExpires)
+	}
+	var c request.Client
+	// fix
+	if parseExpires < 1 {
+		c = request.Client{
+			Timeout: time.Duration(f.timeoutSecond) * time.Second,
+			URL:     urlPath,
+			Method:  request.POST,
+			Header:  header,
+			JSON: web_api.ShareConfig{
+				Password: shareResource.ShareConfig.Password,
+			},
+		}
+	} else {
+		c = request.Client{
+			Timeout: time.Duration(f.timeoutSecond) * time.Second,
+			URL:     urlPath,
+			Method:  request.POST,
+			Header:  header,
+			JSON:    shareResource.ShareConfig,
+		}
 	}
 
 	var shareLink web_api.ShareLink

@@ -187,7 +187,24 @@ func TestResourcesPostOne(t *testing.T) {
 	if err == nil {
 		t.Fatalf("try client.ResourcesPostFile not cover override")
 	}
-
+	t.Logf("~> do sharesRespInfinite")
+	passWord := randomStr(10)
+	shareResourceInfinite := file_browser_client.ShareResource{
+		RemotePath: remotePath,
+		ShareConfig: web_api.ShareConfig{
+			Password: passWord,
+			Expires:  "0",
+			Unit:     web_api.ShareUnitHours,
+		},
+	}
+	sharesRespInfinite, err := client.SharePost(shareResourceInfinite)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.NotNil(t, sharesRespInfinite)
+	assert.NotEqual(t, "", sharesRespInfinite.ShareLink.Hash)
+	t.Logf("------- path: %s\ndonwload page: %s \npasswd: %s", sharesRespInfinite.RemotePath, sharesRespInfinite.DownloadPage, sharesRespInfinite.DownloadPasswd)
+	t.Logf("download url: %s", sharesRespInfinite.DownloadUrl)
 }
 
 func TestSharesPost(t *testing.T) {
