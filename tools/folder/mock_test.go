@@ -8,7 +8,6 @@ import (
 	"io/fs"
 	"math/rand"
 	"os"
-	"path"
 	"path/filepath"
 	"runtime"
 	"testing"
@@ -27,7 +26,7 @@ func getOrCreateTestDataFolderFullPath() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	currentTestDataFolderAbsPath = path.Join(currentFolderPath, "testdata")
+	currentTestDataFolderAbsPath = filepath.Join(currentFolderPath, "testdata")
 	if !pathExistsFast(currentTestDataFolderAbsPath) {
 		err := mkdir(currentTestDataFolderAbsPath)
 		if err != nil {

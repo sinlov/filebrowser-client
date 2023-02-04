@@ -6,7 +6,6 @@ import (
 	"github.com/sinlov/filebrowser-client/tools/folder"
 	"github.com/sinlov/filebrowser-client/web_api"
 	"github.com/stretchr/testify/assert"
-	"path"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -30,7 +29,7 @@ func Test_NewClient(t *testing.T) {
 		if envCheck(t) {
 			return
 		}
-		t.Errorf("file_browser_client.NewClient err: %v", err)
+		t.Fatalf("file_browser_client.NewClient err: %v", err)
 	}
 	// verify _NewClient
 	assert.Equal(t, "", client.Recaptcha)
@@ -52,7 +51,7 @@ func TestLogin(t *testing.T) {
 		if envCheck(t) {
 			return
 		}
-		t.Errorf("file_browser_client.NewClient() err: %v", err)
+		t.Fatalf("file_browser_client.NewClient() err: %v", err)
 	}
 	// do Login
 	t.Logf("~> do Login")
@@ -62,7 +61,7 @@ func TestLogin(t *testing.T) {
 
 	err = client.Login()
 	if err != nil {
-		t.Errorf("file_browser_client.Login() err: %v", err)
+		t.Fatalf("file_browser_client.Login() err: %v", err)
 	}
 	// verify Login
 	assert.True(t, client.IsLogin())
@@ -103,19 +102,19 @@ func TestResourcesGet(t *testing.T) {
 	// mock ResourcesGetCheckSum
 	client, err := tryLoginClient(t, envDebug)
 	if err != nil {
-		t.Errorf("login fail!")
+		t.Fatalf("login fail!")
 		return
 	}
 	// do ResourcesGetCheckSum
 	t.Logf("~> do ResourcesGetCheckSum")
 	_, err = client.ResourcesGetCheckSum("", "abc")
 	if err == nil {
-		t.Errorf("client.ResourcesGetCheckSum not cover unsupport checksum")
+		t.Fatalf("client.ResourcesGetCheckSum not cover unsupport checksum")
 	}
 	resources, err := client.ResourcesGet("")
 	// verify ResourcesGetCheckSum
 	if err != nil {
-		t.Errorf("client.ResourcesGetCheckSum err: %v", err)
+		t.Fatalf("client.ResourcesGetCheckSum err: %v", err)
 	}
 	assert.Equal(t, `/`, resources.Path)
 }
@@ -128,7 +127,7 @@ func TestResourceGet_Not_Found(t *testing.T) {
 	// mock ResourceGet_Not_Found
 	client, err := tryLoginClient(t, envDebug)
 	if err != nil {
-		t.Errorf("login fail!")
+		t.Fatalf("login fail!")
 		return
 	}
 	t.Logf("~> mock ResourceGet_Not_Found")
@@ -136,7 +135,7 @@ func TestResourceGet_Not_Found(t *testing.T) {
 	resources, err := client.ResourcesGet("/abc")
 	t.Logf("~> do ResourceGet_Not_Found")
 	if err == nil {
-		t.Errorf("must test not found err: %v", err)
+		t.Fatalf("must test not found err: %v", err)
 	}
 	t.Logf("mock ResourceGet_Not_Found err: %v", err)
 	// verify ResourceGet_Not_Found
@@ -167,13 +166,13 @@ func TestResourcesPostOne(t *testing.T) {
 	// do ResourcesPostFile
 	client, err := tryLoginClient(t, envDebug)
 	if err != nil {
-		t.Errorf("login fail!")
+		t.Fatalf("login fail!")
 		return
 	}
 
 	localJsonFilePath := walkAllJsonFileBySuffix[len(walkAllJsonFileBySuffix)-1]
 	remotePath := strings.Replace(localJsonFilePath, testDataPostFolderPath, "", -1)
-	remotePath = strings.TrimPrefix(remotePath, string(filepath.Separator))
+	remotePath = folder.Path2WebPath(remotePath)
 	var resourcePost = file_browser_client.ResourcePostFile{
 		LocalFilePath:  localJsonFilePath,
 		RemoteFilePath: remotePath,
@@ -219,13 +218,13 @@ func TestSharesPost(t *testing.T) {
 
 	localJsonFilePath := walkAllJsonFileBySuffix[len(walkAllJsonFileBySuffix)-1]
 	remotePath := strings.Replace(localJsonFilePath, testPostDataFolderPath, "", -1)
-	remotePath = strings.TrimPrefix(remotePath, string(filepath.Separator))
+	remotePath = folder.Path2WebPath(remotePath)
 
 	// do SharePost
 
 	client, err := tryLoginClient(t, envDebug)
 	if err != nil {
-		t.Errorf("login fail!")
+		t.Fatalf("login fail!")
 		return
 	}
 
@@ -244,7 +243,7 @@ func TestSharesPost(t *testing.T) {
 	}
 	assert.NotNil(t, remotePathGetCheckSum256.Checksums)
 
-	downloadLocalPath := path.Join(testDataDownloadFolderPath, remotePath)
+	downloadLocalPath := filepath.Join(testDataDownloadFolderPath, remotePath)
 	t.Logf("downloadLocalPath: %s", downloadLocalPath)
 	pathParent := folder.PathParent(downloadLocalPath)
 	_ = folder.RmDirForce(pathParent)
@@ -339,7 +338,7 @@ func TestSharesPost(t *testing.T) {
 
 	var remoteDirPath = "inner_1"
 	var resourceDirectory = file_browser_client.ResourcePostDirectory{
-		LocalDirectoryPath:  path.Join(testPostDataFolderPath, remoteDirPath),
+		LocalDirectoryPath:  filepath.Join(testPostDataFolderPath, remoteDirPath),
 		RemoteDirectoryPath: remoteDirPath,
 	}
 	postDirectoryFilesRes, err := client.ResourcesPostDirectoryFiles(resourceDirectory, true)

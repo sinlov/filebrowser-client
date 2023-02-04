@@ -8,9 +8,9 @@ import (
 	"io/fs"
 	"os"
 	"os/exec"
-	"path"
 	"path/filepath"
 	"runtime"
+	"strings"
 )
 
 // GetCurrentExecPath get exec path
@@ -99,9 +99,15 @@ func PathIsFile(path string) bool {
 	return !fi.IsDir()
 }
 
-// PathJoin is path.Join()
+// PathJoin is filepath.Join()
 func PathJoin(elem ...string) string {
-	return path.Join(elem...)
+	return filepath.Join(elem...)
+}
+
+func Path2WebPath(path string) string {
+	webPath := strings.TrimPrefix(path, string(filepath.Separator))
+	webPath = strings.Replace(webPath, `\`, `/`, -1)
+	return webPath
 }
 
 // PathParent as filepath.Dir

@@ -359,9 +359,11 @@ func (f *FileBrowserClient) ResourcesPostDirectoryFiles(resourceDirectory Resour
 		}
 		innerPath := strings.Replace(filename, resourceDirectory.LocalDirectoryPath, "", -1)
 		innerPath = strings.TrimPrefix(innerPath, string(filepath.Separator))
+		innerPathWeb := strings.Replace(innerPath, `\`, `/`, -1)
+		remoteWebPath := fmt.Sprintf("%s/%s", resourceDirectory.RemoteDirectoryPath, innerPathWeb)
 		resourcePostFileList = append(resourcePostFileList, ResourcePostFile{
 			LocalFilePath:  filename,
-			RemoteFilePath: fmt.Sprintf("%s/%s", resourceDirectory.RemoteDirectoryPath, innerPath),
+			RemoteFilePath: remoteWebPath,
 		})
 		return nil
 	})

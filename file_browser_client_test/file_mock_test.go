@@ -2,7 +2,6 @@ package file_browser_client_test
 
 import (
 	"fmt"
-	"path"
 	"path/filepath"
 )
 
@@ -11,7 +10,7 @@ func initTestDataPostFileDir() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	testPostDataFolderPath := path.Join(testDataFolderPath, "post")
+	testPostDataFolderPath := filepath.Join(testDataFolderPath, "post")
 
 	rootLevCnt := 3
 
@@ -76,7 +75,7 @@ func initTestDataDownloadDir() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	testDownloadDataFolderPath := path.Join(testDataFolderPath, "download")
+	testDownloadDataFolderPath := filepath.Join(testDataFolderPath, "download")
 	if !pathExistsFast(testDownloadDataFolderPath) {
 		errMkdir := mkdir(testDownloadDataFolderPath)
 		if errMkdir != nil {
