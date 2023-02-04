@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.4.0](https://github.com/sinlov/filebrowser-client/compare/v0.3.0...v0.4.0) (2023-02-04)
+
+
+### Features
+
+* add ResourcesPostFile file sha256 check ([abea935](https://github.com/sinlov/filebrowser-client/commit/abea935af5c22233027125488ed7c7f7bbf00267))
+
 ## [0.3.0](https://github.com/sinlov/filebrowser-client/compare/v0.2.1...v0.3.0) (2023-02-04)
 
 
