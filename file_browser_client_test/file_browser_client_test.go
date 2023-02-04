@@ -7,6 +7,7 @@ import (
 	"github.com/sinlov/filebrowser-client/web_api"
 	"github.com/stretchr/testify/assert"
 	"path"
+	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -116,7 +117,7 @@ func TestResourcesGet(t *testing.T) {
 	if err != nil {
 		t.Errorf("client.ResourcesGetCheckSum err: %v", err)
 	}
-	assert.Equal(t, "/", resources.Path)
+	assert.Equal(t, string(filepath.Separator), resources.Path)
 }
 
 func TestResourceGet_Not_Found(t *testing.T) {
@@ -172,7 +173,7 @@ func TestResourcesPostOne(t *testing.T) {
 
 	localJsonFilePath := walkAllJsonFileBySuffix[len(walkAllJsonFileBySuffix)-1]
 	remotePath := strings.Replace(localJsonFilePath, testDataPostFolderPath, "", -1)
-	remotePath = strings.TrimPrefix(remotePath, "/")
+	remotePath = strings.TrimPrefix(remotePath, string(filepath.Separator))
 	var resourcePost = file_browser_client.ResourcePostFile{
 		LocalFilePath:  localJsonFilePath,
 		RemoteFilePath: remotePath,
@@ -218,7 +219,7 @@ func TestSharesPost(t *testing.T) {
 
 	localJsonFilePath := walkAllJsonFileBySuffix[len(walkAllJsonFileBySuffix)-1]
 	remotePath := strings.Replace(localJsonFilePath, testPostDataFolderPath, "", -1)
-	remotePath = strings.TrimPrefix(remotePath, "/")
+	remotePath = strings.TrimPrefix(remotePath, string(filepath.Separator))
 
 	// do SharePost
 

@@ -63,7 +63,7 @@ func (f *FileBrowserClient) client(
 	if baseUrl == "" {
 		return fbClient, fmt.Errorf("plaese set baseUrl, now is empty")
 	}
-	baseUrl = strings.TrimSuffix(baseUrl, "/")
+	baseUrl = strings.TrimSuffix(baseUrl, string(filepath.Separator))
 	_, err := url.Parse(baseUrl)
 	if err != nil {
 		return fbClient, fmt.Errorf("client baseUrl parse err: %v", err)
@@ -348,7 +348,7 @@ func (f *FileBrowserClient) ResourcesPostDirectoryFiles(resourceDirectory Resour
 			return nil
 		}
 		innerPath := strings.Replace(filename, resourceDirectory.LocalDirectoryPath, "", -1)
-		innerPath = strings.TrimPrefix(innerPath, "/")
+		innerPath = strings.TrimPrefix(innerPath, string(filepath.Separator))
 		resourcePostFileList = append(resourcePostFileList, ResourcePostFile{
 			LocalFilePath:  filename,
 			RemoteFilePath: fmt.Sprintf("%s/%s", resourceDirectory.RemoteDirectoryPath, innerPath),
