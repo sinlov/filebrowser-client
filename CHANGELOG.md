@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.3.0](https://github.com/sinlov/filebrowser-client/compare/v0.2.1...v0.3.0) (2023-02-04)
+
+
+### Features
+
+* add url check by path ([0cdcd10](https://github.com/sinlov/filebrowser-client/commit/0cdcd10dec57060fff6bb6a8f208c2314f917cf1))
+* mark version 0.3.0 ([1cbd924](https://github.com/sinlov/filebrowser-client/commit/1cbd9245d092a365a0ac976d7f6e9cf5ffd94af7))
+* try to fix path error at different OS ([4930735](https://github.com/sinlov/filebrowser-client/commit/49307354e139d85436940051f4346de82d5441fb))
+
+
+### Bug Fixes
+
+* fix send file error at windows path ([6742397](https://github.com/sinlov/filebrowser-client/commit/67423971d28b4398d1816ed6a8918e8ae1036df5))
+
 ### [0.2.1](https://github.com/sinlov/filebrowser-client/compare/v0.1.3...v0.2.1) (2023-02-03)
 
 
