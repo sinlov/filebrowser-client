@@ -11,7 +11,7 @@ import (
 
 const (
 	// Version of cli
-	Version = "v0.3.0"
+	Version = "v0.4.0"
 )
 
 var (

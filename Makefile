@@ -1,7 +1,7 @@
 .PHONY: test check clean build dist all
 #TOP_DIR := $(shell pwd)
 # each tag change this
-ENV_DIST_VERSION := v0.3.0
+ENV_DIST_VERSION := v0.4.0
 
 ROOT_NAME ?= filebrowser-client
 RUN_ARGS = -h
