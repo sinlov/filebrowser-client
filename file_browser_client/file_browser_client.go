@@ -217,6 +217,11 @@ func (f *FileBrowserClient) ResourcesGetCheckSum(pathResource string, checksum s
 	if !tools.StrInArr(checksum, web_api.ChecksumsDefine()) {
 		return resource, fmt.Errorf("plase check checksum, now [ %s ] only support %v", checksum, web_api.ChecksumsDefine())
 	}
+
+	if pathResource != "" {
+		pathResource = strings.TrimPrefix(pathResource, "/")
+	}
+
 	var urlPath = fmt.Sprintf("%s/%s", web_api.ApiResources(), pathResource)
 	header := BaseHeader()
 	header[web_api.AuthHeadKey] = f.authHeadVal
@@ -257,6 +262,7 @@ func (f *FileBrowserClient) ResourcesDeletePath(remotePath string) (bool, error)
 	if remotePath == "" {
 		return false, fmt.Errorf("plase check now is empty for remotePath")
 	}
+	remotePath = strings.TrimPrefix(remotePath, "/")
 	urlPath := fmt.Sprintf("%s/%s", web_api.ApiResources(), remotePath)
 	header := BaseHeader()
 	header[web_api.AuthHeadKey] = f.authHeadVal
@@ -292,6 +298,10 @@ func (f *FileBrowserClient) ResourcesPostFile(resourceFile ResourcePostFile, ove
 	}
 	if folder.PathIsDir(resourceFile.LocalFilePath) {
 		return fmt.Errorf("plase check LocalFilePath, now is path is folder at: %s", resourceFile.LocalFilePath)
+	}
+
+	if resourceFile.RemoteFilePath != "" {
+		resourceFile.RemoteFilePath = strings.TrimPrefix(resourceFile.RemoteFilePath, "/")
 	}
 
 	urlPath := fmt.Sprintf("%s/%s", web_api.ApiResources(), resourceFile.RemoteFilePath)
@@ -397,6 +407,7 @@ func (f *FileBrowserClient) ResourceDownload(remotePath string, localPath string
 	if remotePath == "" {
 		return fmt.Errorf("please check remotePath, now is empty")
 	}
+	remotePath = strings.TrimPrefix(remotePath, "/")
 
 	if localPath == "" {
 		return fmt.Errorf("please check localPath, now is empty")
@@ -450,6 +461,8 @@ func (f *FileBrowserClient) SharePost(shareResource ShareResource) (ShareContent
 		return shareContent, fmt.Errorf("please check shareResource.ShareConfig error of setting most is Unit not in %v , or Expires is less than 0", web_api.ShareUnitDefine())
 	}
 
+	shareResource.RemotePath = strings.TrimPrefix(shareResource.RemotePath, "/")
+
 	urlPath := fmt.Sprintf("%s/%s", web_api.ApiShare(), shareResource.RemotePath)
 	header := BaseHeader()
 	header[web_api.AuthHeadKey] = f.authHeadVal
@@ -491,6 +504,7 @@ func (f *FileBrowserClient) ShareGetByRemotePath(remotePath string) ([]web_api.S
 	if remotePath == "" {
 		return shareLinks, fmt.Errorf("want get remotePath is empty")
 	}
+	remotePath = strings.TrimPrefix(remotePath, "/")
 
 	urlPath := fmt.Sprintf("%s/%s", web_api.ApiShare(), remotePath)
 	header := BaseHeader()
