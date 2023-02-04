@@ -63,7 +63,7 @@ func (f *FileBrowserClient) client(
 	if baseUrl == "" {
 		return fbClient, fmt.Errorf("plaese set baseUrl, now is empty")
 	}
-	baseUrl = strings.TrimSuffix(baseUrl, string(filepath.Separator))
+	baseUrl = strings.TrimSuffix(baseUrl, `/`)
 	_, err := url.Parse(baseUrl)
 	if err != nil {
 		return fbClient, fmt.Errorf("client baseUrl parse err: %v", err)
