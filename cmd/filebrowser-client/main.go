@@ -1,3 +1,5 @@
+//go:build !test
+
 package main
 
 import (
@@ -16,7 +18,6 @@ const (
 
 var (
 	fileBrowserClient file_browser_client.FileBrowserClient
-	isCliDebug        = false
 )
 
 // action
@@ -221,16 +222,6 @@ func appendCliFlag(target []cli.Flag, elem []cli.Flag) []cli.Flag {
 	}
 
 	return append(target, elem...)
-}
-
-// appendCliFlag
-// append cli.Flag
-func appendCommand(target []*cli.Command, elem *cli.Command) []*cli.Command {
-	if elem == nil {
-		return target
-	}
-
-	return append(target, elem)
 }
 
 func checkFlagStringIsEmpty(context *cli.Context, key string) (string, error) {

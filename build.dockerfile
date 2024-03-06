@@ -16,6 +16,10 @@ WORKDIR ${GO_PATH_SOURCE_DIR}
 RUN mkdir -p ${GO_PATH_SOURCE_DIR}/${GO_ENV_PACKAGE_NAME}
 COPY $PWD ${GO_PATH_SOURCE_DIR}/${GO_ENV_PACKAGE_NAME}
 
+# proxy golang
+RUN go env -w "GOPROXY=https://goproxy.cn,direct"
+RUN go env -w "GOPRIVATE='*.gitlab.com,*.gitee.com"
+
 RUN cd ${GO_PATH_SOURCE_DIR}/${GO_ENV_PACKAGE_NAME} && \
     go mod download -x
 

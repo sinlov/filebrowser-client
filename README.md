@@ -1,11 +1,28 @@
-[![go-ubuntu](https://github.com/sinlov/filebrowser-client/workflows/go-ubuntu/badge.svg?branch=main)](https://github.com/sinlov/filebrowser-client/actions)
-[![GoDoc](https://godoc.org/github.com/sinlov/filebrowser-client?status.png)](https://godoc.org/github.com/sinlov/filebrowser-client/)
-[![GoReportCard](https://goreportcard.com/badge/github.com/sinlov/filebrowser-client)](https://goreportcard.com/report/github.com/sinlov/filebrowser-client)
+[![ci](https://github.com/sinlov/filebrowser-client/actions/workflows/ci.yml/badge.svg)](https://github.com/sinlov/filebrowser-client/actions/workflows/ci.yml)
+
+[![go mod version](https://img.shields.io/github/go-mod/go-version/sinlov/filebrowser-client?label=go.mod)](https://github.com/sinlov/filebrowser-client)
+[![GoDoc](https://godoc.org/github.com/sinlov/filebrowser-client?status.png)](https://godoc.org/github.com/sinlov/filebrowser-client)
+[![goreportcard](https://goreportcard.com/badge/github.com/sinlov/filebrowser-client)](https://goreportcard.com/report/github.com/sinlov/filebrowser-client)
+
+[![GitHub license](https://img.shields.io/github/license/sinlov/filebrowser-client)](https://github.com/sinlov/filebrowser-client)
 [![codecov](https://codecov.io/gh/sinlov/filebrowser-client/branch/main/graph/badge.svg)](https://codecov.io/gh/sinlov/filebrowser-client)
+[![GitHub latest SemVer tag)](https://img.shields.io/github/v/tag/sinlov/filebrowser-client)](https://github.com/sinlov/filebrowser-client/tags)
+[![GitHub release)](https://img.shields.io/github/v/release/sinlov/filebrowser-client)](https://github.com/sinlov/filebrowser-client/releases)
 
 ## for what
 
 - this project used to support go web client for [filebrowser](https://github.com/filebrowser/filebrowser)
+
+## Contributing
+
+[![Contributor Covenant](https://img.shields.io/badge/contributor%20covenant-v1.4-ff69b4.svg)](.github/CONTRIBUTING_DOC/CODE_OF_CONDUCT.md)
+[![GitHub contributors](https://img.shields.io/github/contributors/sinlov/filebrowser-client)](https://github.com/sinlov/filebrowser-client/graphs/contributors)
+
+We welcome community contributions to this project.
+
+Please read [Contributor Guide](.github/CONTRIBUTING_DOC/CONTRIBUTING.md) for more information on how to get started.
+
+请阅读有关 [贡献者指南](.github/CONTRIBUTING_DOC/zh-CN/CONTRIBUTING.md) 以获取更多如何入门的信息
 
 ## depends
 
@@ -36,9 +53,10 @@ $ echo "go mod edit -require=$(go list -mod=readonly -m -versions github.com/sin
 $ echo "go mod vendor"
 ```
 
-## evn
+## env
 
-- golang sdk 1.17+
+- minimum go version: go 1.17
+- change `go 1.17`, `^1.17`, `1.17.13` to new go version
 
 # dev
 

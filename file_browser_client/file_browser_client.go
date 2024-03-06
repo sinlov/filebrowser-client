@@ -314,7 +314,7 @@ func (f *FileBrowserClient) ResourcesPostFile(resourceFile ResourcePostFile, ove
 	params := url.Values{}
 	reqUrl, err := url.Parse(urlPath)
 	if err != nil {
-
+		return fmt.Errorf("url parse error\nremote: %s\nlocal: %s\nerr: %v", resourceFile.RemoteFilePath, resourceFile.LocalFilePath, err)
 	}
 	params.Set("override", strconv.FormatBool(override))
 	reqUrl.RawQuery = params.Encode()
@@ -428,7 +428,7 @@ func (f *FileBrowserClient) ResourcesPostDirectoryFiles(resourceDirectory Resour
 		return result, fmt.Errorf("plase check LocalDirectoryPath, now is path is file at: %s", resourceDirectory.LocalDirectoryPath)
 	}
 	var resourcePostFileList []ResourcePostFile
-	err = filepath.Walk(resourceDirectory.LocalDirectoryPath, func(filename string, fi os.FileInfo, err error) error {
+	_ = filepath.Walk(resourceDirectory.LocalDirectoryPath, func(filename string, fi os.FileInfo, err error) error {
 		if fi.IsDir() { // ignore dir
 			return nil
 		}
@@ -442,6 +442,7 @@ func (f *FileBrowserClient) ResourcesPostDirectoryFiles(resourceDirectory Resour
 		})
 		return nil
 	})
+
 	if len(resourcePostFileList) == 0 {
 		return result, fmt.Errorf("plase check LocalDirectoryPath, has no files at: %s", resourceDirectory.LocalDirectoryPath)
 	}
