@@ -92,9 +92,9 @@ func TestPathParent(t *testing.T) {
 	// verify PathParent
 
 	if runtime.GOOS == "windows" {
-		assert.Equal(t, "foo\\\\bar", folder.PathParent(pathOne))
-		assert.Equal(t, "\\abc\\def", folder.PathParent("/abc/def/ghf"))
-		assert.Equal(t, "..\\abc\\def", folder.PathParent("../abc/def/ghf"))
+		assert.Equal(t, `foo\bar`, folder.PathParent(pathOne))
+		assert.Equal(t, `\abc\def`, folder.PathParent("/abc/def/ghf"))
+		assert.Equal(t, `..\abc\def`, folder.PathParent("../abc/def/ghf"))
 	} else {
 		assert.Equal(t, "foo/bar", folder.PathParent(pathOne))
 		assert.Equal(t, "/abc/def", folder.PathParent("/abc/def/ghf"))
