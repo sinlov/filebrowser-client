@@ -193,7 +193,7 @@ func TestResourcesPostOne(t *testing.T) {
 		RemotePath: remotePath,
 		ShareConfig: web_api.ShareConfig{
 			Password: passWord,
-			Expires:  "0",
+			Expires:  "10",
 			Unit:     web_api.ShareUnitHours,
 		},
 	}

@@ -58,6 +58,10 @@ $ echo "go mod vendor"
 - minimum go version: go 1.17
 - change `go 1.17`, `^1.17`, `1.17.13` to new go version
 
+## usage
+
+- see [doc/README.md](doc/README.md)
+
 # dev
 
 ```bash
