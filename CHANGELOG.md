@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [convention-change-log](https://github.com/convention-change/convention-change-log) for commit guidelines.
 
+## [0.6.1](https://github.com/sinlov/filebrowser-client/compare/0.6.0...v0.6.1) (2024-03-06)
+
+### 📝 Documentation
+
+* update test caes and doc of useage ([64465fff](https://github.com/sinlov/filebrowser-client/commit/64465fff857f1229ccc6014e92fd1a493a740570))
+
 ## [0.6.0](https://github.com/sinlov/filebrowser-client/compare/0.5.0...v0.6.0) (2024-03-06)
 
 ### ✨ Features
