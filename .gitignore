@@ -1,3 +1,8 @@
+### custom ignore
+
+*.log
+logs/
+
 ### build temple
 build/
 dist/
@@ -6,17 +11,20 @@ dist/
 
 !go.sum
 vendor/
+.vendor_new/
 
 ### go test
 # out of testcase
 *.test
 # test coverage out
 coverage.out
-#coverage.txt
+coverage.txt
 # testData folder of golang
-testdata/
+test[Dd]ata/
 # Expected results when tested
 .golden
+# integration test report out
+profile.txt
 
 ### Go template
 # Compiled Object files, Static and Dynamic libs (Shared Objects)
@@ -41,7 +49,6 @@ _cgo_export.*
 _testmain.go
 
 *.exe
-*.test
 *.prof
 
 
