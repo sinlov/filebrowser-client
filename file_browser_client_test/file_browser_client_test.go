@@ -32,7 +32,7 @@ func Test_NewClient(t *testing.T) {
 		t.Fatalf("file_browser_client.NewClient err: %v", err)
 	}
 	// verify _NewClient
-	assert.Equal(t, "", client.Recaptcha)
+	assert.Equal(t, "", client.GetRecaptcha())
 	assert.False(t, client.IsLogin())
 }
 
