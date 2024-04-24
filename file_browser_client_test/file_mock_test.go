@@ -2,19 +2,18 @@ package file_browser_client_test
 
 import (
 	"fmt"
+	"github.com/sinlov-go/unittest-kit/unittest_file_kit"
 	"path/filepath"
 )
 
 func initTestDataPostFileDir() (string, error) {
-	testDataFolderPath, err := getOrCreateTestDataFolderFullPath()
-	if err != nil {
-		return "", err
-	}
+	testDataFolderPath := testGoldenKit.GetTestDataFolderFullPath()
+
 	testPostDataFolderPath := filepath.Join(testDataFolderPath, "post")
 
 	rootLevCnt := 3
 
-	err = addTextFileByTry(testPostDataFolderPath, "data", "json", rootLevCnt)
+	err := addTextFileByTry(testPostDataFolderPath, "data", "json", rootLevCnt)
 	if err != nil {
 		return "", err
 	}
@@ -71,24 +70,21 @@ func initTestDataPostFileDir() (string, error) {
 }
 
 func initTestDataDownloadDir() (string, error) {
-	testDataFolderPath, err := getOrCreateTestDataFolderFullPath()
-	if err != nil {
-		return "", err
-	}
+	testDataFolderPath := testGoldenKit.GetTestDataFolderFullPath()
 	testDownloadDataFolderPath := filepath.Join(testDataFolderPath, "download")
-	if !pathExistsFast(testDownloadDataFolderPath) {
-		errMkdir := mkdir(testDownloadDataFolderPath)
+	if !unittest_file_kit.PathExistsFast(testDownloadDataFolderPath) {
+		errMkdir := unittest_file_kit.Mkdir(testDownloadDataFolderPath)
 		if errMkdir != nil {
 			return "", errMkdir
 		}
 	}
-	return testDownloadDataFolderPath, err
+	return testDownloadDataFolderPath, nil
 }
 
 func addTextFileByTry(targetDir, fileHead, suffix string, cnt int) error {
 
-	if !pathExistsFast(targetDir) {
-		err := mkdir(targetDir)
+	if !unittest_file_kit.PathExistsFast(targetDir) {
+		err := unittest_file_kit.Mkdir(targetDir)
 		if err != nil {
 			return err
 		}
@@ -103,7 +99,7 @@ func addTextFileByTry(targetDir, fileHead, suffix string, cnt int) error {
 		fName := fmt.Sprintf("%s_%d.%s", fileHead, i, suffix)
 		newJsonPath := filepath.Join(targetDir, fName)
 		foo.Foo = i
-		errJsonWrite := writeFileAsJsonBeauty(newJsonPath, foo, true)
+		errJsonWrite := unittest_file_kit.WriteFileAsJsonBeauty(newJsonPath, foo, true)
 		if errJsonWrite != nil {
 			return errJsonWrite
 		}

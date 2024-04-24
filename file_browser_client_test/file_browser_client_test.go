@@ -2,6 +2,7 @@ package file_browser_client_test
 
 import (
 	"fmt"
+	"github.com/sinlov-go/unittest-kit/unittest_random_kit"
 	"github.com/sinlov/filebrowser-client/file_browser_client"
 	"github.com/sinlov/filebrowser-client/tools/folder"
 	"github.com/sinlov/filebrowser-client/web_api"
@@ -188,7 +189,7 @@ func TestResourcesPostOne(t *testing.T) {
 		t.Fatalf("try client.ResourcesPostFile not cover override")
 	}
 	t.Logf("~> do sharesRespInfinite")
-	passWord := randomStr(10)
+	passWord := unittest_random_kit.RandomStr(10)
 	shareResourceInfinite := file_browser_client.ShareResource{
 		RemotePath: remotePath,
 		ShareConfig: web_api.ShareConfig{
@@ -289,7 +290,7 @@ func TestSharesPost(t *testing.T) {
 	}
 
 	t.Logf("~> do SharePost")
-	passWord := randomStr(10)
+	passWord := unittest_random_kit.RandomStr(10)
 	shareResource := file_browser_client.ShareResource{
 		RemotePath: remotePath,
 		ShareConfig: web_api.ShareConfig{

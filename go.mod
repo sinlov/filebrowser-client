@@ -4,6 +4,7 @@ go 1.17
 
 require (
 	github.com/monaco-io/request v1.0.16
+	github.com/sinlov-go/unittest-kit v1.1.0
 	github.com/stretchr/testify v1.9.0
 	github.com/urfave/cli/v2 v2.27.1
 )
