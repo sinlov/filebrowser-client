@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [convention-change-log](https://github.com/convention-change/convention-change-log) for commit guidelines.
 
+## [0.7.0](https://github.com/sinlov/filebrowser-client/compare/0.6.1...v0.7.0) (2024-04-24)
+
+### ✨ Features
+
+* add `file_browser_log` package for management log ([d6872a28](https://github.com/sinlov/filebrowser-client/commit/d6872a282ebabbd9f7982f03733c539d55c70702))
+
+* improve the code structure for easy maintenance ([70982691](https://github.com/sinlov/filebrowser-client/commit/709826918d5e8882c87765b93ce447587f871b5e)), feat [#1](https://github.com/sinlov/filebrowser-client/issues/1)
+
+### ♻ Refactor
+
+* use `github.com/sinlov-go/unittest-kit` for unit test of this project ([0d3e112a](https://github.com/sinlov/filebrowser-client/commit/0d3e112af4255995c3c5a047885c76b3d805316b))
+
+### 👷‍ Build System
+
+* github.com/urfave/cli/v2 v2.4.1 support go 1.11 then v2.4.2 update to go 1.18 ([5670287d](https://github.com/sinlov/filebrowser-client/commit/5670287dc7eb56c009b3f290ed9936f356f7868e))
+
 ## [0.6.1](https://github.com/sinlov/filebrowser-client/compare/0.6.0...v0.6.1) (2024-03-06)
 
 ### 📝 Documentation
