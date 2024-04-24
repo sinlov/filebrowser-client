@@ -3,8 +3,8 @@ package file_browser_client
 import (
 	"fmt"
 	"github.com/monaco-io/request"
+	"github.com/sinlov/filebrowser-client/file_browser_log"
 	"github.com/sinlov/filebrowser-client/web_api"
-	"log"
 	"time"
 )
 
@@ -12,6 +12,11 @@ import (
 // open FileBrowserClient debug or close
 func (f *FileBrowserClient) Debug(isDebug bool) {
 	f.isDebug = isDebug
+	if f.isDebug {
+		file_browser_log.OpenDebug()
+	} else {
+		file_browser_log.CloseDebug()
+	}
 }
 
 func (f *FileBrowserClient) GetBaseUrl() string {
@@ -42,9 +47,7 @@ func (f *FileBrowserClient) Login() error {
 	if f.baseUrl == "" || f.username == "" {
 		return fmt.Errorf("clinet not init by baseUrl or username, please check")
 	}
-	if f.isDebug {
-		log.Printf("debug: FileBrowserClient try Login user: [ %s ] api: %s", f.username, web_api.ApiLogin())
-	}
+	file_browser_log.Debugf(" FileBrowserClient try Login user: [ %s ] api: %s", f.username, web_api.ApiLogin())
 
 	header := BaseHeader()
 
@@ -62,9 +65,7 @@ func (f *FileBrowserClient) Login() error {
 	if err != nil {
 		return err
 	}
-	if f.isDebug {
-		log.Printf("debug: try Login user succes by code [ %v ]", send.Code())
-	}
+	file_browser_log.Debugf(" try Login user succes by code [ %v ]", send.Code())
 	f.authHeadVal = send.String()
 	return nil
 }

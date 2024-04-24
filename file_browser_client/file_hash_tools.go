@@ -5,8 +5,8 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"github.com/sinlov/filebrowser-client/file_browser_log"
 	"io"
-	"log"
 	"os"
 )
 
@@ -25,7 +25,7 @@ func FileSha256Bytes(path string) ([]byte, error) {
 	defer func(openFile *os.File) {
 		errCloseFile := openFile.Close()
 		if err != nil {
-			log.Fatalf("FileSha256Bytes close file err: %v", errCloseFile)
+			file_browser_log.Warnf("FileSha256Bytes close file err: %v", errCloseFile)
 		}
 	}(openFile)
 
@@ -69,7 +69,7 @@ func FileMd5Bytes(path string) ([]byte, error) {
 	defer func(openFile *os.File) {
 		errCloseFile := openFile.Close()
 		if err != nil {
-			log.Fatalf("FileSha256Bytes close file err: %v", errCloseFile)
+			file_browser_log.Warnf("FileSha256Bytes close file err: %v", errCloseFile)
 		}
 	}(openFile)
 

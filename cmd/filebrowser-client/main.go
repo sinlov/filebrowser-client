@@ -5,6 +5,7 @@ package main
 import (
 	"fmt"
 	"github.com/sinlov/filebrowser-client/file_browser_client"
+	"github.com/sinlov/filebrowser-client/file_browser_log"
 	"github.com/urfave/cli/v2"
 	"log"
 	"os"
@@ -184,6 +185,7 @@ func resourceAction(context *cli.Context) error {
 }
 
 func main() {
+	file_browser_log.SetLogLineDeep(2)
 	app := cli.NewApp()
 	app.Version = Version
 	app.Name = "filebrowser client"

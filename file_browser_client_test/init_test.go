@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/sinlov-go/unittest-kit/env_kit"
 	"github.com/sinlov-go/unittest-kit/unittest_file_kit"
+	"github.com/sinlov/filebrowser-client/file_browser_log"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -50,7 +51,7 @@ func envCheck(t *testing.T) bool {
 
 func init() {
 	testBaseFolderPath, _ = getCurrentFolderPath()
-	//wd_log.SetLogLineDeep(2)
+	file_browser_log.SetLogLineDeep(2)
 
 	testGoldenKit = unittest_file_kit.NewTestGoldenKit(testBaseFolderPath)
 

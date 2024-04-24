@@ -2,8 +2,8 @@ package file_browser_client
 
 import (
 	"fmt"
+	"github.com/sinlov/filebrowser-client/file_browser_log"
 	"github.com/sinlov/filebrowser-client/tools/folder"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -48,11 +48,11 @@ func (f *FileBrowserClient) ResourcesPostDirectoryFiles(resourceDirectory Resour
 		return result, fmt.Errorf("plase check LocalDirectoryPath, has no files at: %s", resourceDirectory.LocalDirectoryPath)
 	}
 	if f.isDebug {
-		log.Print("debug: want ResourcesPostDirectoryFiles start\n")
+		file_browser_log.Debug(" want ResourcesPostDirectoryFiles start\n")
 		for _, resourcePostFile := range resourcePostFileList {
-			log.Printf("debug: ResourcesPostDirectoryFiles\nLocalFilePath: %s\nRemoteFilePath: %s\n", resourcePostFile.LocalFilePath, resourcePostFile.RemoteFilePath)
+			file_browser_log.Debugf(" ResourcesPostDirectoryFiles\nLocalFilePath: %s\nRemoteFilePath: %s\n", resourcePostFile.LocalFilePath, resourcePostFile.RemoteFilePath)
 		}
-		log.Print("debug: want ResourcesPostDirectoryFiles end")
+		file_browser_log.Debug(" want ResourcesPostDirectoryFiles end")
 	}
 	result.FullSuccess = true
 	var postSuccessFileList []ResourcePostFile
@@ -60,9 +60,7 @@ func (f *FileBrowserClient) ResourcesPostDirectoryFiles(resourceDirectory Resour
 	for _, resourcePostFile := range resourcePostFileList {
 		errPostFile := f.ResourcesPostFile(resourcePostFile, override)
 		if errPostFile != nil {
-			if f.isDebug {
-				log.Printf("post folder fail at\nLocalFilePath: %s\nRemoteFilePath: %s\nerr: %s", resourcePostFile.LocalFilePath, resourcePostFile.LocalFilePath, errPostFile)
-			}
+			file_browser_log.Debugf("post folder fail at\nLocalFilePath: %s\nRemoteFilePath: %s\nerr: %s", resourcePostFile.LocalFilePath, resourcePostFile.LocalFilePath, errPostFile)
 			postFailFileList = append(postFailFileList, resourcePostFile)
 			result.FullSuccess = false
 		} else {

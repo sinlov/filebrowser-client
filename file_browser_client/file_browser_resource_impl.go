@@ -3,11 +3,11 @@ package file_browser_client
 import (
 	"fmt"
 	"github.com/monaco-io/request"
+	"github.com/sinlov/filebrowser-client/file_browser_log"
 	"github.com/sinlov/filebrowser-client/tools/folder"
 	tools "github.com/sinlov/filebrowser-client/tools/str_tools"
 	"github.com/sinlov/filebrowser-client/web_api"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -149,7 +149,7 @@ func (f *FileBrowserClient) ResourcesPostFile(resourceFile ResourcePostFile, ove
 	defer func(fileBodyIO *os.File) {
 		errFileBodyIO := fileBodyIO.Close()
 		if err != nil {
-			log.Fatalf("try ResourcesPostFile file IO Close err: %v", errFileBodyIO)
+			file_browser_log.Warnf("try ResourcesPostFile file IO Close err: %v", errFileBodyIO)
 		}
 	}(fileBodyIO)
 
@@ -172,9 +172,7 @@ func (f *FileBrowserClient) ResourcesPostFile(resourceFile ResourcePostFile, ove
 		Timeout: time.Duration(f.timeoutFileSecond) * time.Second,
 	}
 
-	if f.isDebug {
-		log.Printf("debug: FileBrowserClient sendFile try user: [ %s ] url: %s ", f.username, req.URL.String())
-	}
+	file_browser_log.Debugf(" FileBrowserClient sendFile try user: [ %s ] url: %s ", f.username, req.URL.String())
 
 	resp, err := httpClient.Do(req)
 	if err != nil {
@@ -183,7 +181,7 @@ func (f *FileBrowserClient) ResourcesPostFile(resourceFile ResourcePostFile, ove
 	defer func(Body io.ReadCloser) {
 		errClose := Body.Close()
 		if errClose != nil {
-			log.Fatalf("try ResourcesPostFile close err: %v", errClose)
+			file_browser_log.Warnf("try ResourcesPostFile close err: %v", errClose)
 		}
 	}(resp.Body)
 
