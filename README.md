@@ -56,6 +56,7 @@ $ echo "go mod vendor"
 ## env
 
 - minimum go version: go 1.17
+    - github.com/urfave/cli/v2 v2.4.1 support go 1.11 then v2.4.2 update to go 1.18 
 - change `go 1.17`, `^1.17`, `1.17.13` to new go version
 
 ## usage
