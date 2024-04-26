@@ -79,7 +79,9 @@ func (f *FileBrowserClient) sendRespJson(c request.Client, data interface{}, api
 
 func (f *FileBrowserClient) sendSaveFile(c request.Client, apiName string, fileName string, override bool) (*response.Sugar, error) {
 	file_browser_log.Debugf("FileBrowserClient sendSaveFile try user: [ %s ] url: %s ", f.username, c.URL)
-	c.PrintCURL()
+	if f.isDebug {
+		c.PrintCURL()
+	}
 	if !override && folder.PathExistsFast(fileName) {
 		return nil, fmt.Errorf("sendSaveFile not override, save path exists at: %s", fileName)
 	}
