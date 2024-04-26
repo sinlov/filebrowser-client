@@ -77,18 +77,25 @@ func (f *FileBrowserClient) sendRespJson(c request.Client, data interface{}, api
 	return resp, nil
 }
 
-func (f *FileBrowserClient) sendSaveFile(c request.Client, apiName string, fileName string, override bool) (*response.Sugar, error) {
-	file_browser_log.Debugf("FileBrowserClient sendSaveFile try user: [ %s ] url: %s ", f.username, c.URL)
+func (f *FileBrowserClient) resourceDownload2SaveFile(c request.Client, apiName string, fileName string, override bool) (*response.Sugar, error) {
+	file_browser_log.Debugf("FileBrowserClient resourceDownload2SaveFile try user: [ %s ] url: %s ", f.username, c.URL)
 	if f.isDebug {
 		c.PrintCURL()
 	}
 	if !override && folder.PathExistsFast(fileName) {
-		return nil, fmt.Errorf("sendSaveFile not override, save path exists at: %s", fileName)
+		return nil, fmt.Errorf("resourceDownload2SaveFile not override, save path exists at: %s", fileName)
 	}
 
 	pathParent := folder.PathParent(fileName)
 	if !folder.PathExistsFast(pathParent) {
-		return nil, fmt.Errorf("sendSaveFile fail parent path not exists at: %s", pathParent)
+		if override {
+			errMkdir := folder.Mkdir(pathParent)
+			if errMkdir != nil {
+				return nil, fmt.Errorf("resourceDownload2SaveFile mkdir pathParent [ %s ] fail: %v", pathParent, errMkdir)
+			}
+		} else {
+			return nil, fmt.Errorf("resourceDownload2SaveFile fail not overrider, now parent path not exists at: %s", pathParent)
+		}
 	}
 
 	send := c.Send()
@@ -98,7 +105,7 @@ func (f *FileBrowserClient) sendSaveFile(c request.Client, apiName string, fileN
 	if send.Code() != http.StatusOK {
 		return send, fmt.Errorf("try %v user [ %v ] fail: code [ %v ], msg: %v", apiName, f.username, send.Code(), send.String())
 	}
-	file_browser_log.Debugf("sendSaveFile try %v user succes by code [ %v ]", apiName, send.Code())
+	file_browser_log.Debugf("resourceDownload2SaveFile try %v user succes by code [ %v ]", apiName, send.Code())
 	send.SaveToFile(fileName)
 	return send, nil
 }

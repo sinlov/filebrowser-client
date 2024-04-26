@@ -266,19 +266,6 @@ func TestSharesPost(t *testing.T) {
 	pathParent := folder.PathParent(downloadLocalPath)
 	_ = folder.RmDirForce(pathParent)
 
-	err = client.ResourceDownload(remotePath, downloadLocalPath, true)
-	if err == nil {
-		t.Fatal("not cover ResourceDownload not init parent path")
-	}
-	err = folder.Mkdir(pathParent)
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = client.ResourceDownload(remotePath, downloadLocalPath, true)
-	if err != nil {
-		t.Fatal(err)
-	}
-
 	err = client.ResourceDownload(remotePath, downloadLocalPath, false)
 	if err == nil {
 		t.Fatal("not cover ResourceDownload not override path")

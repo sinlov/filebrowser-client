@@ -221,8 +221,8 @@ func (f *FileBrowserClient) ResourcesPostFile(resourceFile ResourcePostFile, ove
 
 // ResourceDownload
 // remotePath must exist and not empty;
-// localPath must not empty and parent folder must exist
-// override is overrider download
+// override is true, will not check localPath and will mkdir by parent folder
+// override is false, will check localPath and not mkdir by parent folder
 func (f *FileBrowserClient) ResourceDownload(remotePath string, localPath string, override bool) error {
 	if !f.IsLogin() {
 		return fmt.Errorf("plase Login then ResourceDownload")
@@ -246,7 +246,7 @@ func (f *FileBrowserClient) ResourceDownload(remotePath string, localPath string
 		Header:  header,
 	}
 
-	_, err := f.sendSaveFile(c, "ResourceDownload", localPath, override)
+	_, err := f.resourceDownload2SaveFile(c, "ResourceDownload", localPath, override)
 	if err != nil {
 		return err
 	}
