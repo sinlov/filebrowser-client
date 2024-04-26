@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [convention-change-log](https://github.com/convention-change/convention-change-log) for commit guidelines.
 
+## [0.7.1](https://github.com/sinlov/filebrowser-client/compare/0.7.0...v0.7.1) (2024-04-26)
+
+### 🐛 Bug Fixes
+
+* `sendSaveFile` print curl without debug ([5cfa026b](https://github.com/sinlov/filebrowser-client/commit/5cfa026b7fbb8361864c589f7e264590318db710)), fix [#3](https://github.com/sinlov/filebrowser-client/issues/3)
+
 ## [0.7.0](https://github.com/sinlov/filebrowser-client/compare/0.6.1...v0.7.0) (2024-04-24)
 
 ### ✨ Features
