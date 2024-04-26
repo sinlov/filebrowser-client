@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [convention-change-log](https://github.com/convention-change/convention-change-log) for commit guidelines.
 
+## [0.7.2](https://github.com/sinlov/filebrowser-client/compare/0.7.1...v0.7.2) (2024-04-26)
+
+### 🐛 Bug Fixes
+
+* change `ResourceDownload` support `override` true to mkdir as local ([58a64664](https://github.com/sinlov/filebrowser-client/commit/58a646644aacb4fca7c5c6e15e324908cbade7d2)), fix [#5](https://github.com/sinlov/filebrowser-client/issues/5)
+
 ## [0.7.1](https://github.com/sinlov/filebrowser-client/compare/0.7.0...v0.7.1) (2024-04-26)
 
 ### 🐛 Bug Fixes
